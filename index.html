@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edwin Sal - AI Developer</title>
+  <meta name="description" content="Personal portfolio of Edwin Bañago, AI Developer based in Makati, Philippines.">
+  <style>
+    /* CSS Reset */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* CSS Custom Properties - Light Mode */
+    :root {
+      --bg-primary: #f5f0e6;
+      --bg-secondary: #ebe5d9;
+      --text-primary: #2d3436;
+      --text-secondary: #636e72;
+      --teal: #2a9d8f;
+      --teal-light: #83c5be;
+      --pink: #d58a94;
+      --pink-light: #e8b4bc;
+      --yellow: #e9c46a;
+      --green: #588157;
+      --coral: #e58e7a;
+      --link: #2a9d8f;
+      --link-hover: #d58a94;
+      --link-visited: #7d5a63;
+    }
+
+    /* Dark Mode */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary: #1a1a2e;
+        --bg-secondary: #16213e;
+        --text-primary: #e8e6e3;
+        --text-secondary: #a9a9a9;
+        --teal: #40b4a6;
+        --teal-light: #5fcfbf;
+        --pink: #e8a5ad;
+        --pink-light: #f0c0c8;
+        --yellow: #f0d080;
+        --green: #7cb07c;
+        --coral: #f0a090;
+        --link: #40b4a6;
+        --link-hover: #e8a5ad;
+        --link-visited: #c090a0;
+      }
+    }
+
+    /* Typography */
+    html {
+      font-size: clamp(14px, 2.5vw, 18px);
+    }
+
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      max-width: 70ch;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    /* Links */
+    a {
+      color: var(--link);
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: var(--link-hover);
+      text-decoration: underline;
+    }
+
+    a:visited {
+      color: var(--link-visited);
+    }
+
+    /* ASCII Header */
+    .ascii-header {
+      font-family: 'Courier New', 'Lucida Console', 'DejaVu Sans Mono', monospace;
+      font-size: clamp(16px, 3.5vw, 30px);
+      line-height: 1;
+      white-space: pre;
+      color: var(--teal);
+      text-align: center;
+      margin: 1.5rem 0 0.5rem 0;
+      overflow: hidden;
+    }
+
+    .tagline {
+      text-align: center;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    /* Sections */
+    section {
+      margin: 1.5rem 0;
+    }
+
+    h2 {
+      color: var(--pink);
+      font-size: 1.2rem;
+      margin-bottom: 0.75rem;
+      text-transform: lowercase;
+    }
+
+    h2::before {
+      content: '> ';
+      color: var(--teal);
+    }
+
+    p {
+      margin-bottom: 0.75rem;
+    }
+
+    /* Fancy HR Dividers */
+    hr.fancy {
+      border: 0;
+      height: 3px;
+      background: linear-gradient(90deg,
+        var(--coral) 0%,
+        var(--yellow) 25%,
+        var(--green) 50%,
+        var(--teal) 75%,
+        var(--pink) 100%
+      );
+      margin: 1.5rem 0;
+      animation: rainbow-shift 8s linear infinite;
+      background-size: 200% 100%;
+    }
+
+    @keyframes rainbow-shift {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      hr.fancy {
+        animation: none;
+        background-size: 100% 100%;
+      }
+      .spin {
+        animation: none;
+      }
+    }
+
+    /* Projects - Under Construction */
+    .under-construction {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      background: repeating-linear-gradient(
+        45deg,
+        var(--yellow),
+        var(--yellow) 10px,
+        var(--text-primary) 10px,
+        var(--text-primary) 20px
+      );
+      color: var(--bg-primary);
+      font-weight: bold;
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
+    }
+
+    .coming-soon {
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    /* Cool Links */
+    .cool-links {
+      list-style: none;
+    }
+
+    .cool-links li {
+      margin-bottom: 0.5rem;
+    }
+
+    .cool-links li::before {
+      content: '* ';
+      color: var(--coral);
+    }
+
+    .link-desc {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+    /* Bulletin Board */
+    #bulletin-board {
+      position: relative;
+      min-height: 280px;
+      background: var(--bg-secondary);
+      border: 2px dashed var(--teal);
+      margin: 1rem 0;
+      padding: 1rem;
+      overflow: hidden;
+    }
+
+    .note {
+      position: absolute;
+      padding: 0.4rem 0.6rem;
+      background: var(--yellow);
+      color: #2d3436;
+      font-size: 0.75rem;
+      max-width: 110px;
+      word-wrap: break-word;
+      box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .note-form {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .note-form input {
+      flex: 1;
+      min-width: 150px;
+      padding: 0.4rem;
+      font-family: inherit;
+      font-size: 0.9rem;
+      border: 1px solid var(--teal);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+    }
+
+    .note-form button {
+      padding: 0.4rem 0.8rem;
+      font-family: inherit;
+      font-size: 0.9rem;
+      background: var(--teal);
+      color: var(--bg-primary);
+      border: none;
+      cursor: pointer;
+    }
+
+    .note-form button:hover {
+      background: var(--teal-light);
+    }
+
+    .char-count {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      width: 100%;
+    }
+
+    /* Contact */
+    .contact-list {
+      list-style: none;
+    }
+
+    .contact-list li {
+      margin-bottom: 0.5rem;
+    }
+
+    .spin {
+      display: inline-block;
+      animation: spin 3s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .visitor-counter {
+      margin-bottom: 1rem;
+      font-style: italic;
+    }
+
+    /* 88x31 Badges */
+    .badges {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 1rem 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 88px;
+      height: 31px;
+      font-size: 9px;
+      font-family: Arial, sans-serif;
+      text-decoration: none;
+      border: 1px solid var(--text-secondary);
+      background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+      color: var(--text-primary);
+    }
+
+    .badge:hover {
+      border-color: var(--teal);
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .badge-html {
+      background: linear-gradient(180deg, #e34c26 0%, #c73e1d 100%);
+      color: #fff;
+      border-color: #c73e1d;
+    }
+
+    .badge-1mb {
+      background: linear-gradient(180deg, var(--teal) 0%, var(--green) 100%);
+      color: #fff;
+      border-color: var(--green);
+    }
+
+    .badge-eyes {
+      background: linear-gradient(180deg, var(--pink-light) 0%, var(--pink) 100%);
+      color: var(--bg-primary);
+      border-color: var(--pink);
+    }
+
+    .last-updated {
+      margin-top: 1rem;
+      font-size: 0.8rem;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 500px) {
+      .ascii-header {
+        font-size: 10px;
+      }
+
+      #bulletin-board {
+        min-height: 350px;
+      }
+
+      .note {
+        position: relative !important;
+        transform: none !important;
+        display: inline-block;
+        margin: 0.25rem;
+        left: auto !important;
+        top: auto !important;
+      }
+
+      #bulletin-board {
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <pre class="ascii-header" role="img" aria-label="Edwin Sal">
+░█▀▀░█▀▄░█░█░▀█▀░█▀█░░░█▀▀░█▀█░█░░
+░█▀▀░█░█░█▄█░░█░░█░█░░░▀▀█░█▀█░█░░
+░▀▀▀░▀▀░░▀░▀░▀▀▀░▀░▀░░░▀▀▀░▀░▀░▀▀▀</pre>
+    <p class="tagline">AI Developer - Makati, Philippines</p>
+  </header>
+
+  <hr class="fancy">
+
+  <main>
+    <section id="about">
+      <h2>about</h2>
+      <p>I spend a lot of time figuring out how to do less, better. Lately, that involves letting systems take a first pass and then shaping what comes out. It's surprisingly effective.</p>
+    </section>
+
+    <hr class="fancy">
+
+    <section id="now">
+      <h2>now</h2>
+      <p>This section is where I share what I'm currently working on or thinking about. Check back soon for updates.</p>
+    </section>
+
+    <hr class="fancy">
+
+    <section id="projects">
+      <h2>projects <span class="under-construction">UNDER CONSTRUCTION</span></h2>
+      <p class="coming-soon">Projects coming soon. I'm working on documenting some things worth sharing.</p>
+    </section>
+
+    <hr class="fancy">
+
+    <section id="writing">
+      <h2>writing</h2>
+      <p class="coming-soon">No posts yet. This space will grow over time.</p>
+    </section>
+
+    <hr class="fancy">
+
+    <section id="cool-links">
+      <h2>cool links</h2>
+      <ul class="cool-links">
+        <li>
+          <a href="https://bellard.org" target="_blank" rel="noopener">bellard.org</a>
+          <span class="link-desc">- Fabrice Bellard's projects. Created FFmpeg, QEMU, JSLinux.</span>
+        </li>
+        <li>
+          <a href="https://neal.fun" target="_blank" rel="noopener">neal.fun</a>
+          <span class="link-desc">- Interactive visualizations and thought experiments.</span>
+        </li>
+        <li>
+          <a href="https://ooh.directory" target="_blank" rel="noopener">ooh.directory</a>
+          <span class="link-desc">- Curated blogs worth reading.</span>
+        </li>
+        <li>
+          <a href="https://wiby.me" target="_blank" rel="noopener">wiby.me</a>
+          <span class="link-desc">- Search engine for the old web.</span>
+        </li>
+        <li>
+          <a href="https://radio.garden" target="_blank" rel="noopener">radio.garden</a>
+          <span class="link-desc">- Spin a globe, hear local radio stations worldwide.</span>
+        </li>
+        <li>
+          <a href="https://1mb.club" target="_blank" rel="noopener">1mb.club</a>
+          <span class="link-desc">- The club this site aims to join.</span>
+        </li>
+      </ul>
+    </section>
+
+    <hr class="fancy">
+
+    <section id="bulletin">
+      <h2>bulletin board</h2>
+      <p>Leave a note! 20 characters max. Be pithy.</p>
+      <div id="bulletin-board">
+        <noscript>
+          <p style="padding: 1rem; color: var(--text-secondary);">Enable JavaScript to see and leave notes.</p>
+        </noscript>
+      </div>
+      <form class="note-form" onsubmit="return handleSubmit(event)">
+        <input type="text" id="note-input" maxlength="20" placeholder="Your note..." aria-label="Leave a note">
+        <button type="submit">pin it</button>
+        <span class="char-count"><span id="char-current">0</span>/20 characters</span>
+      </form>
+    </section>
+
+    <hr class="fancy">
+
+    <section id="contact">
+      <h2>contact</h2>
+      <ul class="contact-list">
+        <li><span class="spin">&#x2709;</span> <a href="mailto:edwinbanago692@gmail.com">edwinbanago692@gmail.com</a></li>
+        <li>&#x1F4BB; <a href="https://github.com/edwin-sal" target="_blank" rel="noopener">github.com/edwin-sal</a></li>
+        <li>&#x1F464; <a href="https://linkedin.com/in/edwin-sal" target="_blank" rel="noopener">linkedin.com/in/edwin-sal</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <hr class="fancy">
+
+  <footer>
+    <p class="visitor-counter">You are visitor #00001247</p>
+    <div class="badges">
+      <span class="badge badge-html">MADE WITH HTML</span>
+      <a href="https://1mb.club" target="_blank" rel="noopener" class="badge badge-1mb">&lt;1MB CLUB</a>
+      <span class="badge badge-eyes">BEST VIEWED<br>WITH EYES</span>
+    </div>
+    <p class="last-updated">Last updated: April 16, 2026</p>
+  </footer>
+
+  <script>
+    // Bulletin Board - JSONbin.io Integration
+    // Replace these with your actual JSONbin credentials
+    const BIN_ID = 'YOUR_BIN_ID_HERE';
+    const API_KEY = 'YOUR_API_KEY_HERE';
+    const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+    const board = document.getElementById('bulletin-board');
+    const input = document.getElementById('note-input');
+    const charCount = document.getElementById('char-current');
+
+    // Character counter
+    input.addEventListener('input', () => {
+      charCount.textContent = input.value.length;
+    });
+
+    // Load notes on page load
+    async function loadNotes() {
+      if (BIN_ID === 'YOUR_BIN_ID_HERE') {
+        renderDemoNotes();
+        return;
+      }
+      try {
+        const res = await fetch(`${API_URL}/latest`, {
+          headers: { 'X-Access-Key': API_KEY }
+        });
+        if (!res.ok) throw new Error('Failed to load');
+        const data = await res.json();
+        renderNotes(data.record.notes || []);
+      } catch (e) {
+        console.error('Could not load notes:', e);
+        renderDemoNotes();
+      }
+    }
+
+    // Render demo notes when JSONbin is not configured
+    function renderDemoNotes() {
+      const demoNotes = [
+        { text: 'hello world!' },
+        { text: 'cool site' },
+        { text: 'retro vibes' },
+        { text: '<3' }
+      ];
+      renderNotes(demoNotes);
+    }
+
+    // Render notes to the board
+    function renderNotes(notes) {
+      board.innerHTML = '';
+      const lastNotes = notes.slice(-30);
+      lastNotes.forEach((note, i) => {
+        const el = document.createElement('div');
+        el.className = 'note';
+        el.textContent = note.text;
+        // Random positioning
+        el.style.left = `${5 + (Math.random() * 75)}%`;
+        el.style.top = `${5 + (Math.random() * 75)}%`;
+        el.style.transform = `rotate(${(Math.random() - 0.5) * 20}deg)`;
+        // Stagger z-index
+        el.style.zIndex = i;
+        board.appendChild(el);
+      });
+    }
+
+    // Handle form submission
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text || text.length > 20) return false;
+
+      if (BIN_ID === 'YOUR_BIN_ID_HERE') {
+        alert('Bulletin board is in demo mode. Set up JSONbin.io to enable posting.');
+        return false;
+      }
+
+      try {
+        // Fetch current notes
+        const res = await fetch(`${API_URL}/latest`, {
+          headers: { 'X-Access-Key': API_KEY }
+        });
+        const data = await res.json();
+        const notes = [...(data.record.notes || []), { text, ts: Date.now() }];
+
+        // Update bin
+        await fetch(API_URL, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Access-Key': API_KEY
+          },
+          body: JSON.stringify({ notes })
+        });
+
+        input.value = '';
+        charCount.textContent = '0';
+        renderNotes(notes);
+      } catch (e) {
+        console.error('Could not post note:', e);
+        alert('Could not post note. Try again later.');
+      }
+      return false;
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', loadNotes);
+  </script>
+</body>
+</html>
