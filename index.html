@@ -146,6 +146,16 @@
       .spin {
         animation: none;
       }
+      .under-construction {
+        animation: none;
+      }
+      .ticker {
+        animation: none;
+        flex-wrap: wrap;
+      }
+      .ticker-wrap {
+        overflow: visible;
+      }
     }
 
     /* Projects - Under Construction */
@@ -159,10 +169,16 @@
         var(--text-primary) 10px,
         var(--text-primary) 20px
       );
+      background-size: 28px 28px;
+      animation: hazard-scroll 0.8s linear infinite;
       color: var(--bg-primary);
       font-weight: bold;
       font-size: 0.8rem;
       margin-left: 0.5rem;
+    }
+
+    @keyframes hazard-scroll {
+      to { background-position: 28px 0; }
     }
 
     .coming-soon {
@@ -170,23 +186,38 @@
       font-style: italic;
     }
 
-    /* Cool Links */
-    .cool-links {
-      list-style: none;
+    /* Cool Links - Ticker */
+    .ticker-wrap {
+      overflow: hidden;
+      padding: 0.6rem 0;
+      margin-top: 0.75rem;
     }
 
-    .cool-links li {
-      margin-bottom: 0.5rem;
+    .ticker {
+      display: inline-flex;
+      gap: 2rem;
+      animation: ticker-scroll 20s linear infinite;
+      white-space: nowrap;
     }
 
-    .cool-links li::before {
-      content: '* ';
+    .ticker:hover {
+      animation-play-state: paused;
+    }
+
+    .ticker-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.9rem;
+    }
+
+    .ticker-item .sep {
       color: var(--coral);
     }
 
-    .link-desc {
-      color: var(--text-secondary);
-      font-size: 0.85rem;
+    @keyframes ticker-scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
     }
 
     /* Bulletin Board */
@@ -403,32 +434,22 @@
 
     <section id="cool-links">
       <h2>cool links</h2>
-      <ul class="cool-links">
-        <li>
-          <a href="https://bellard.org" target="_blank" rel="noopener">bellard.org</a>
-          <span class="link-desc">- Fabrice Bellard's projects. Created FFmpeg, QEMU, JSLinux.</span>
-        </li>
-        <li>
-          <a href="https://neal.fun" target="_blank" rel="noopener">neal.fun</a>
-          <span class="link-desc">- Interactive visualizations and thought experiments.</span>
-        </li>
-        <li>
-          <a href="https://ooh.directory" target="_blank" rel="noopener">ooh.directory</a>
-          <span class="link-desc">- Curated blogs worth reading.</span>
-        </li>
-        <li>
-          <a href="https://wiby.me" target="_blank" rel="noopener">wiby.me</a>
-          <span class="link-desc">- Search engine for the old web.</span>
-        </li>
-        <li>
-          <a href="https://radio.garden" target="_blank" rel="noopener">radio.garden</a>
-          <span class="link-desc">- Spin a globe, hear local radio stations worldwide.</span>
-        </li>
-        <li>
-          <a href="https://1mb.club" target="_blank" rel="noopener">1mb.club</a>
-          <span class="link-desc">- The club this site aims to join.</span>
-        </li>
-      </ul>
+      <div class="ticker-wrap">
+        <div class="ticker">
+          <span class="ticker-item"><span class="sep">*</span> <a href="https://bellard.org" target="_blank" rel="noopener">bellard.org</a></span>
+          <span class="ticker-item"><span class="sep">*</span> <a href="https://neal.fun" target="_blank" rel="noopener">neal.fun</a></span>
+          <span class="ticker-item"><span class="sep">*</span> <a href="https://ooh.directory" target="_blank" rel="noopener">ooh.directory</a></span>
+          <span class="ticker-item"><span class="sep">*</span> <a href="https://wiby.me" target="_blank" rel="noopener">wiby.me</a></span>
+          <span class="ticker-item"><span class="sep">*</span> <a href="https://radio.garden" target="_blank" rel="noopener">radio.garden</a></span>
+          <span class="ticker-item"><span class="sep">*</span> <a href="https://1mb.club" target="_blank" rel="noopener">1mb.club</a></span>
+          <span class="ticker-item"><span class="sep">*</span> <a href="https://bellard.org" target="_blank" rel="noopener">bellard.org</a></span>
+          <span class="ticker-item"><span class="sep">*</span> <a href="https://neal.fun" target="_blank" rel="noopener">neal.fun</a></span>
+          <span class="ticker-item"><span class="sep">*</span> <a href="https://ooh.directory" target="_blank" rel="noopener">ooh.directory</a></span>
+          <span class="ticker-item"><span class="sep">*</span> <a href="https://wiby.me" target="_blank" rel="noopener">wiby.me</a></span>
+          <span class="ticker-item"><span class="sep">*</span> <a href="https://radio.garden" target="_blank" rel="noopener">radio.garden</a></span>
+          <span class="ticker-item"><span class="sep">*</span> <a href="https://1mb.club" target="_blank" rel="noopener">1mb.club</a></span>
+        </div>
+      </div>
     </section>
 
     <hr class="fancy">
