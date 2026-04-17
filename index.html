@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edwin Sal - AI Developer</title>
+  <title>Edwin Saledwin-sal.github.io/portfolio-2026. - AI Developer</title>
   <meta name="description" content="Personal portfolio of Edwin Bañago, AI Developer based in Makati, Philippines.">
   <style>
     /* CSS Reset */
@@ -494,109 +494,60 @@
   </footer>
 
   <script>
-    // Bulletin Board - JSONbin.io Integration
-    // Replace these with your actual JSONbin credentials
-    const BIN_ID = 'YOUR_BIN_ID_HERE';
-    const API_KEY = 'YOUR_API_KEY_HERE';
-    const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+    const API_URL = 'PASTE_VERCEL_URL_HERE';
+    let notes = [];
 
     const board = document.getElementById('bulletin-board');
     const input = document.getElementById('note-input');
     const charCount = document.getElementById('char-current');
 
-    // Character counter
     input.addEventListener('input', () => {
       charCount.textContent = input.value.length;
     });
 
-    // Load notes on page load
-    async function loadNotes() {
-      if (BIN_ID === 'YOUR_BIN_ID_HERE') {
-        renderDemoNotes();
-        return;
-      }
-      try {
-        const res = await fetch(`${API_URL}/latest`, {
-          headers: { 'X-Access-Key': API_KEY }
-        });
-        if (!res.ok) throw new Error('Failed to load');
-        const data = await res.json();
-        renderNotes(data.record.notes || []);
-      } catch (e) {
-        console.error('Could not load notes:', e);
-        renderDemoNotes();
-      }
-    }
-
-    // Render demo notes when JSONbin is not configured
-    function renderDemoNotes() {
-      const demoNotes = [
-        { text: 'hello world!' },
-        { text: 'cool site' },
-        { text: 'retro vibes' },
-        { text: '<3' }
-      ];
-      renderNotes(demoNotes);
-    }
-
-    // Render notes to the board
-    function renderNotes(notes) {
+    function renderNotes(list) {
       board.innerHTML = '';
-      const lastNotes = notes.slice(-30);
-      lastNotes.forEach((note, i) => {
+      list.forEach((note, i) => {
         const el = document.createElement('div');
         el.className = 'note';
         el.textContent = note.text;
-        // Random positioning
         el.style.left = `${5 + (Math.random() * 75)}%`;
         el.style.top = `${5 + (Math.random() * 75)}%`;
         el.style.transform = `rotate(${(Math.random() - 0.5) * 20}deg)`;
-        // Stagger z-index
         el.style.zIndex = i;
         board.appendChild(el);
       });
     }
 
-    // Handle form submission
-    async function handleSubmit(e) {
+    async function loadNotes() {
+      try {
+        const res = await fetch(API_URL);
+        if (!res.ok) return;
+        const data = await res.json();
+        notes = Array.isArray(data) ? data : [];
+        renderNotes(notes);
+      } catch (e) { /* silent */ }
+    }
+
+    function handleSubmit(e) {
       e.preventDefault();
       const text = input.value.trim();
       if (!text || text.length > 20) return false;
 
-      if (BIN_ID === 'YOUR_BIN_ID_HERE') {
-        alert('Bulletin board is in demo mode. Set up JSONbin.io to enable posting.');
-        return false;
-      }
+      notes.push({ text, ts: Date.now() });
+      renderNotes(notes);
+      input.value = '';
+      charCount.textContent = '0';
 
-      try {
-        // Fetch current notes
-        const res = await fetch(`${API_URL}/latest`, {
-          headers: { 'X-Access-Key': API_KEY }
-        });
-        const data = await res.json();
-        const notes = [...(data.record.notes || []), { text, ts: Date.now() }];
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      }).catch(() => {});
 
-        // Update bin
-        await fetch(API_URL, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Access-Key': API_KEY
-          },
-          body: JSON.stringify({ notes })
-        });
-
-        input.value = '';
-        charCount.textContent = '0';
-        renderNotes(notes);
-      } catch (e) {
-        console.error('Could not post note:', e);
-        alert('Could not post note. Try again later.');
-      }
       return false;
     }
 
-    // Initialize
     document.addEventListener('DOMContentLoaded', loadNotes);
   </script>
 </body>
