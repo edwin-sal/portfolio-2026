@@ -1,14 +1,15 @@
 const { Redis } = require('@upstash/redis');
 
-const JSONBIN_BASE = 'https://api.jsonbin.io/v3/b';
 const ALLOWED_ORIGINS = [
-  'https://portfolio-2026-api.vercel.app',
+  'https://edwinsal.vercel.app',
 ];
 const LOCALHOST_RE = /^http:\/\/localhost(:\d+)?$/;
 const MAX_NOTES = 100;
 const MAX_LEN = 20;
 const STRIP_RE = /[\x00-\x1F\x7F\u200B-\u200D\uFEFF]/g;
 const RATE_WINDOW_SEC = 60;
+const NOTE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+const NOTES_KEY = 'notes';
 
 let redis;
 function getRedis() {
@@ -20,12 +21,9 @@ function getRedis() {
   return redis;
 }
 
-async function isRateLimited(ip) {
+async function isRateLimited(client, ip) {
   if (process.env.RATE_LIMIT_ENABLED !== 'true') return false;
   if (!ip) return false;
-  const client = getRedis();
-  if (!client) return false;
-  // SET NX + EX: succeeds only if no active limit key exists.
   const result = await client.set(`rl:${ip}`, '1', { ex: RATE_WINDOW_SEC, nx: true });
   return result !== 'OK';
 }
@@ -46,25 +44,19 @@ function setCors(res, origin) {
   res.setHeader('Access-Control-Expose-Headers', 'x-rate-limit');
 }
 
-async function readBin(binId, key) {
-  const r = await fetch(`${JSONBIN_BASE}/${binId}/latest`, {
-    headers: { 'X-Access-Key': key },
-  });
-  if (!r.ok) throw new Error(`jsonbin read ${r.status}`);
-  const data = await r.json();
-  return Array.isArray(data?.record?.notes) ? data.record.notes : [];
+async function readNotes(client) {
+  const cutoff = Date.now() - NOTE_TTL_MS;
+  await client.zremrangebyscore(NOTES_KEY, 0, cutoff);
+  return await client.zrange(NOTES_KEY, 0, -1);
 }
 
-async function writeBin(binId, key, notes) {
-  const r = await fetch(`${JSONBIN_BASE}/${binId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Access-Key': key,
-    },
-    body: JSON.stringify({ notes }),
-  });
-  if (!r.ok) throw new Error(`jsonbin write ${r.status}`);
+async function addNote(client, note) {
+  await client.zadd(NOTES_KEY, { score: note.ts, member: note });
+  await client.zremrangebyrank(NOTES_KEY, 0, -(MAX_NOTES + 1));
+}
+
+function randomId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
 }
 
 module.exports = async (req, res) => {
@@ -76,23 +68,22 @@ module.exports = async (req, res) => {
     return res.end();
   }
 
-  const binId = process.env.JSONBIN_BIN_ID;
-  const key = process.env.JSONBIN_API_KEY;
-  if (!binId || !key) {
+  const client = getRedis();
+  if (!client) {
     res.statusCode = 500;
     return res.json({ error: 'server not configured' });
   }
 
   try {
     if (req.method === 'GET') {
-      const notes = await readBin(binId, key);
       res.setHeader('x-rate-limit', process.env.RATE_LIMIT_ENABLED === 'true' ? 'on' : 'off');
+      const notes = await readNotes(client);
       return res.json(notes);
     }
 
     if (req.method === 'POST') {
       const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim();
-      if (await isRateLimited(ip)) {
+      if (await isRateLimited(client, ip)) {
         res.statusCode = 429;
         return res.json({ error: 'chill out bru' });
       }
@@ -107,10 +98,7 @@ module.exports = async (req, res) => {
         res.statusCode = 400;
         return res.json({ error: 'invalid length' });
       }
-      const notes = await readBin(binId, key);
-      notes.push({ text, ts: Date.now() });
-      const trimmed = notes.slice(-MAX_NOTES);
-      await writeBin(binId, key, trimmed);
+      await addNote(client, { text, ts: Date.now(), id: randomId() });
       return res.json({ ok: true });
     }
 
