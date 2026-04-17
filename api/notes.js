@@ -4,7 +4,6 @@ const ALLOWED_ORIGINS = [
   'https://edwinsal.vercel.app',
 ];
 const LOCALHOST_RE = /^http:\/\/localhost(:\d+)?$/;
-const MAX_NOTES = 100;
 const MAX_LEN = 20;
 const STRIP_RE = /[\x00-\x1F\x7F\u200B-\u200D\uFEFF]/g;
 const RATE_WINDOW_SEC = 60;
@@ -52,7 +51,6 @@ async function readNotes(client) {
 
 async function addNote(client, note) {
   await client.zadd(NOTES_KEY, { score: note.ts, member: note });
-  await client.zremrangebyrank(NOTES_KEY, 0, -(MAX_NOTES + 1));
 }
 
 function randomId() {
