@@ -1,3 +1,5 @@
+const { Redis } = require('@upstash/redis');
+
 const JSONBIN_BASE = 'https://api.jsonbin.io/v3/b';
 const ALLOWED_ORIGINS = [
   'https://portfolio-2026-api.vercel.app',
@@ -6,17 +8,26 @@ const LOCALHOST_RE = /^http:\/\/localhost(:\d+)?$/;
 const MAX_NOTES = 100;
 const MAX_LEN = 20;
 const STRIP_RE = /[\x00-\x1F\x7F\u200B-\u200D\uFEFF]/g;
-const RATE_WINDOW_MS = 10 * 1000;
-const lastPostByIp = new Map();
+const RATE_WINDOW_SEC = 60;
 
-function isRateLimited(ip) {
+let redis;
+function getRedis() {
+  if (redis) return redis;
+  const url = process.env.KV_REST_API_URL;
+  const token = process.env.KV_REST_API_TOKEN;
+  if (!url || !token) return null;
+  redis = new Redis({ url, token });
+  return redis;
+}
+
+async function isRateLimited(ip) {
   if (process.env.RATE_LIMIT_ENABLED !== 'true') return false;
   if (!ip) return false;
-  const now = Date.now();
-  const last = lastPostByIp.get(ip);
-  if (last && now - last < RATE_WINDOW_MS) return true;
-  lastPostByIp.set(ip, now);
-  return false;
+  const client = getRedis();
+  if (!client) return false;
+  // SET NX + EX: succeeds only if no active limit key exists.
+  const result = await client.set(`rl:${ip}`, '1', { ex: RATE_WINDOW_SEC, nx: true });
+  return result !== 'OK';
 }
 
 function pickOrigin(origin) {
@@ -32,6 +43,7 @@ function setCors(res, origin) {
   res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Expose-Headers', 'x-rate-limit');
 }
 
 async function readBin(binId, key) {
@@ -74,12 +86,13 @@ module.exports = async (req, res) => {
   try {
     if (req.method === 'GET') {
       const notes = await readBin(binId, key);
+      res.setHeader('x-rate-limit', process.env.RATE_LIMIT_ENABLED === 'true' ? 'on' : 'off');
       return res.json(notes);
     }
 
     if (req.method === 'POST') {
       const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim();
-      if (isRateLimited(ip)) {
+      if (await isRateLimited(ip)) {
         res.statusCode = 429;
         return res.json({ error: 'chill out bru' });
       }

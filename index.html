@@ -503,7 +503,10 @@
 
   <script>
     const API_URL = '/api/notes';
+    const RATE_WINDOW_MS = 60 * 1000;
     let notes = [];
+    let lastPostTs = 0;
+    let rateLimitOn = true;
 
     const board = document.getElementById('bulletin-board');
     const input = document.getElementById('note-input');
@@ -539,6 +542,7 @@
       try {
         const res = await fetch(API_URL);
         if (!res.ok) return;
+        rateLimitOn = res.headers.get('x-rate-limit') !== 'off';
         const data = await res.json();
         notes = Array.isArray(data) ? data : [];
         board.innerHTML = '';
@@ -552,12 +556,18 @@
       const text = input.value.trim();
       if (!text || text.length > 20) return false;
 
+      if (rateLimitOn && Date.now() - lastPostTs < RATE_WINDOW_MS) {
+        flashMsg('chill out bru');
+        return false;
+      }
+
       const note = { text, ts: Date.now() };
       notes.push(note);
       const el = appendNote(note);
       input.value = '';
       charCount.textContent = '0';
       noteMsg.textContent = '';
+      lastPostTs = Date.now();
 
       fetch(API_URL, {
         method: 'POST',
