@@ -6,6 +6,18 @@ const LOCALHOST_RE = /^http:\/\/localhost(:\d+)?$/;
 const MAX_NOTES = 100;
 const MAX_LEN = 20;
 const STRIP_RE = /[\x00-\x1F\x7F\u200B-\u200D\uFEFF]/g;
+const RATE_WINDOW_MS = 10 * 1000;
+const lastPostByIp = new Map();
+
+function isRateLimited(ip) {
+  if (process.env.RATE_LIMIT_ENABLED !== 'true') return false;
+  if (!ip) return false;
+  const now = Date.now();
+  const last = lastPostByIp.get(ip);
+  if (last && now - last < RATE_WINDOW_MS) return true;
+  lastPostByIp.set(ip, now);
+  return false;
+}
 
 function pickOrigin(origin) {
   if (!origin) return null;
@@ -59,10 +71,6 @@ module.exports = async (req, res) => {
     return res.json({ error: 'server not configured' });
   }
 
-  // TODO(rate-limit): before prod, gate POST by IP using an in-memory
-  // Map<ip, lastPostTs> keyed off req.headers['x-forwarded-for'].
-  // 1 post / minute / IP, return 429 on excess.
-
   try {
     if (req.method === 'GET') {
       const notes = await readBin(binId, key);
@@ -70,6 +78,11 @@ module.exports = async (req, res) => {
     }
 
     if (req.method === 'POST') {
+      const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+      if (isRateLimited(ip)) {
+        res.statusCode = 429;
+        return res.json({ error: 'chill out bru' });
+      }
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
       const raw = body?.text;
       if (typeof raw !== 'string') {

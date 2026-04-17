@@ -280,6 +280,13 @@
       width: 100%;
     }
 
+    .note-msg {
+      font-size: 0.75rem;
+      color: var(--coral);
+      width: 100%;
+      min-height: 1em;
+    }
+
     /* Contact */
     .contact-list {
       list-style: none;
@@ -466,6 +473,7 @@
         <input type="text" id="note-input" maxlength="20" placeholder="Your note..." aria-label="Leave a note">
         <button type="submit">pin it</button>
         <span class="char-count"><span id="char-current">0</span>/20 characters</span>
+        <span class="note-msg" id="note-msg" aria-live="polite"></span>
       </form>
     </section>
 
@@ -500,6 +508,14 @@
     const board = document.getElementById('bulletin-board');
     const input = document.getElementById('note-input');
     const charCount = document.getElementById('char-current');
+    const noteMsg = document.getElementById('note-msg');
+    let msgTimer;
+
+    function flashMsg(text) {
+      noteMsg.textContent = text;
+      clearTimeout(msgTimer);
+      msgTimer = setTimeout(() => { noteMsg.textContent = ''; }, 4000);
+    }
 
     input.addEventListener('input', () => {
       charCount.textContent = input.value.length;
@@ -516,6 +532,7 @@
       el.style.transform = `rotate(${(Math.random() - 0.5) * 20}deg)`;
       el.style.zIndex = ++topZ;
       board.appendChild(el);
+      return el;
     }
 
     async function loadNotes() {
@@ -537,14 +554,22 @@
 
       const note = { text, ts: Date.now() };
       notes.push(note);
-      appendNote(note);
+      const el = appendNote(note);
       input.value = '';
       charCount.textContent = '0';
+      noteMsg.textContent = '';
 
       fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text })
+      }).then((res) => {
+        if (res.status === 429) {
+          el.remove();
+          const i = notes.indexOf(note);
+          if (i !== -1) notes.splice(i, 1);
+          flashMsg('chill out bru');
+        }
       }).catch(() => {});
 
       return false;
