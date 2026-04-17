@@ -242,6 +242,11 @@
       box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
     }
 
+    .note .face, .note .back { display: block; }
+    .note .back { display: none; font-size: 0.65rem; line-height: 1.2; }
+    .note.flipped .face { display: none; }
+    .note.flipped .back { display: block; }
+
     .note-form {
       margin-top: 1rem;
       display: flex;
@@ -540,10 +545,30 @@
 
     let topZ = 0;
 
+    function backText(note) {
+      const where = note.geo
+        ? [note.geo.city, note.geo.country].filter(Boolean).join(', ') || '???'
+        : '???';
+      const what = note.device || '???';
+      return `${what} · ${where}`;
+    }
+
     function appendNote(note) {
       const el = document.createElement('div');
       el.className = 'note';
-      el.textContent = note.text;
+
+      const face = document.createElement('span');
+      face.className = 'face';
+      face.textContent = note.text;
+      el.appendChild(face);
+
+      const back = document.createElement('span');
+      back.className = 'back';
+      back.textContent = backText(note);
+      el.appendChild(back);
+
+      el.addEventListener('click', () => el.classList.toggle('flipped'));
+
       el.style.left = `${5 + (Math.random() * 75)}%`;
       el.style.top = `${5 + (Math.random() * 75)}%`;
       el.style.transform = `rotate(${(Math.random() - 0.5) * 20}deg)`;
@@ -587,13 +612,21 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text })
-      }).then((res) => {
+      }).then(async (res) => {
         if (res.status === 429) {
           el.remove();
           const i = notes.indexOf(note);
           if (i !== -1) notes.splice(i, 1);
           flashMsg('chill out bru');
+          return;
         }
+        if (!res.ok) return;
+        const data = await res.json().catch(() => null);
+        if (!data?.note) return;
+        const i = notes.indexOf(note);
+        if (i !== -1) notes[i] = data.note;
+        const backEl = el.querySelector('.back');
+        if (backEl) backEl.textContent = backText(data.note);
       }).catch(() => {});
 
       return false;
@@ -603,6 +636,7 @@
       const els = Array.from(board.children);
       const zOrder = [...els.keys()].sort(() => Math.random() - 0.5);
       els.forEach((el, i) => {
+        el.classList.remove('flipped');
         el.style.left = `${5 + (Math.random() * 75)}%`;
         el.style.top = `${5 + (Math.random() * 75)}%`;
         el.style.transform = `rotate(${(Math.random() - 0.5) * 20}deg)`;

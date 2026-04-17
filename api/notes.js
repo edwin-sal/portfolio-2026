@@ -10,6 +10,21 @@ const RATE_WINDOW_SEC = 60;
 const NOTE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const NOTES_KEY = 'notes';
 
+const BROWSERS = [
+  [/Edg\//, 'Edge'], [/OPR\//, 'Opera'], [/Firefox\//, 'Firefox'],
+  [/Chrome\//, 'Chrome'], [/Safari\//, 'Safari'],
+];
+const OSES = [
+  [/iPhone/, 'iPhone'], [/iPad/, 'iPad'], [/Android/, 'Android'],
+  [/Mac OS X|Macintosh/, 'macOS'], [/Windows/, 'Windows'], [/Linux/, 'Linux'],
+];
+function parseUA(ua) {
+  if (!ua) return '';
+  const b = BROWSERS.find(([re]) => re.test(ua))?.[1] || 'browser';
+  const o = OSES.find(([re]) => re.test(ua))?.[1] || 'device';
+  return `${b} on ${o}`;
+}
+
 let redis;
 function getRedis() {
   if (redis) return redis;
@@ -96,8 +111,17 @@ module.exports = async (req, res) => {
         res.statusCode = 400;
         return res.json({ error: 'invalid length' });
       }
-      await addNote(client, { text, ts: Date.now(), id: randomId() });
-      return res.json({ ok: true });
+      const country = (req.headers['x-vercel-ip-country'] || '').trim();
+      const city = decodeURIComponent(req.headers['x-vercel-ip-city'] || '').trim();
+      const device = parseUA(req.headers['user-agent']);
+      const geo = (country || city) ? { country, city } : null;
+      const note = {
+        text, ts: Date.now(), id: randomId(),
+        ...(geo && { geo }),
+        ...(device && { device }),
+      };
+      await addNote(client, note);
+      return res.json({ ok: true, note });
     }
 
     res.statusCode = 405;
