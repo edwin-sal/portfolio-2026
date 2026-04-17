@@ -1,6 +1,6 @@
 const JSONBIN_BASE = 'https://api.jsonbin.io/v3/b';
 const ALLOWED_ORIGINS = [
-  'https://edwin-sal.github.io',
+  'https://portfolio-2026-api.vercel.app',
 ];
 const LOCALHOST_RE = /^http:\/\/localhost(:\d+)?$/;
 const MAX_NOTES = 100;
