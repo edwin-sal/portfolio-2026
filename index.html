@@ -505,18 +505,17 @@
       charCount.textContent = input.value.length;
     });
 
-    function renderNotes(list) {
-      board.innerHTML = '';
-      list.forEach((note, i) => {
-        const el = document.createElement('div');
-        el.className = 'note';
-        el.textContent = note.text;
-        el.style.left = `${5 + (Math.random() * 75)}%`;
-        el.style.top = `${5 + (Math.random() * 75)}%`;
-        el.style.transform = `rotate(${(Math.random() - 0.5) * 20}deg)`;
-        el.style.zIndex = i;
-        board.appendChild(el);
-      });
+    let topZ = 0;
+
+    function appendNote(note) {
+      const el = document.createElement('div');
+      el.className = 'note';
+      el.textContent = note.text;
+      el.style.left = `${5 + (Math.random() * 75)}%`;
+      el.style.top = `${5 + (Math.random() * 75)}%`;
+      el.style.transform = `rotate(${(Math.random() - 0.5) * 20}deg)`;
+      el.style.zIndex = ++topZ;
+      board.appendChild(el);
     }
 
     async function loadNotes() {
@@ -525,7 +524,9 @@
         if (!res.ok) return;
         const data = await res.json();
         notes = Array.isArray(data) ? data : [];
-        renderNotes(notes);
+        board.innerHTML = '';
+        topZ = 0;
+        notes.forEach(appendNote);
       } catch (e) { /* silent */ }
     }
 
@@ -534,8 +535,9 @@
       const text = input.value.trim();
       if (!text || text.length > 20) return false;
 
-      notes.push({ text, ts: Date.now() });
-      renderNotes(notes);
+      const note = { text, ts: Date.now() };
+      notes.push(note);
+      appendNote(note);
       input.value = '';
       charCount.textContent = '0';
 
