@@ -9,42 +9,22 @@
     /* CSS Reset */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* CSS Custom Properties - Light Mode */
+    /* CSS Custom Properties */
     :root {
-      --bg-primary: #f5f0e6;
-      --bg-secondary: #ebe5d9;
-      --text-primary: #2d3436;
-      --text-secondary: #636e72;
-      --teal: #2a9d8f;
-      --teal-light: #83c5be;
-      --pink: #d58a94;
-      --pink-light: #e8b4bc;
-      --yellow: #e9c46a;
-      --green: #588157;
-      --coral: #e58e7a;
-      --link: #2a9d8f;
-      --link-hover: #d58a94;
-      --link-visited: #7d5a63;
-    }
-
-    /* Dark Mode */
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg-primary: #1a1a2e;
-        --bg-secondary: #16213e;
-        --text-primary: #e8e6e3;
-        --text-secondary: #a9a9a9;
-        --teal: #40b4a6;
-        --teal-light: #5fcfbf;
-        --pink: #e8a5ad;
-        --pink-light: #f0c0c8;
-        --yellow: #f0d080;
-        --green: #7cb07c;
-        --coral: #f0a090;
-        --link: #40b4a6;
-        --link-hover: #e8a5ad;
-        --link-visited: #c090a0;
-      }
+      --bg-primary: #1a1a2e;
+      --bg-secondary: #16213e;
+      --text-primary: #e8e6e3;
+      --text-secondary: #a9a9a9;
+      --teal: #40b4a6;
+      --teal-light: #5fcfbf;
+      --pink: #e8a5ad;
+      --pink-light: #f0c0c8;
+      --yellow: #f0d080;
+      --green: #7cb07c;
+      --coral: #f0a090;
+      --link: #40b4a6;
+      --link-hover: #e8a5ad;
+      --link-visited: #c090a0;
     }
 
     /* Typography */
@@ -143,10 +123,9 @@
         animation: none;
         background-size: 100% 100%;
       }
-      .spin {
-        animation: none;
-      }
-      .under-construction {
+      .spin,
+      .under-construction,
+      #rate-modal[open] {
         animation: none;
       }
       .ticker {
@@ -285,11 +264,66 @@
       width: 100%;
     }
 
-    .note-msg {
+    /* BBS-window Rate Modal */
+    #rate-modal {
+      border: 2px solid var(--teal);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-family: inherit;
+      width: min(300px, 90vw);
+      margin: auto;
+      padding: 0;
+      box-shadow: 6px 6px 0 var(--bg-primary), 6px 6px 0 1px var(--teal);
+    }
+    #rate-modal::backdrop { background: rgba(0,0,0,0.5); }
+    html:has(#rate-modal[open]) { overflow: hidden; }
+    #rate-modal[open] { animation: pop-in 0.15s ease-out; }
+    @keyframes pop-in {
+      from { transform: scale(0.92); opacity: 0; }
+      to   { transform: scale(1);    opacity: 1; }
+    }
+    .rm-titlebar {
+      background: var(--teal);
+      color: var(--bg-primary);
+      padding: 0.3rem 0.6rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       font-size: 0.75rem;
-      color: var(--coral);
-      width: 100%;
-      min-height: 1em;
+      font-weight: bold;
+      letter-spacing: 0.05em;
+    }
+    .rm-titlebar .rm-chrome { letter-spacing: 0.2em; }
+    .rm-body { padding: 1.1rem 1rem 0.9rem; text-align: center; }
+    .rm-msg { font-size: 1rem; margin-bottom: 0.2rem; color: var(--pink); }
+    .rm-sub {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      font-style: italic;
+      margin-bottom: 0.9rem;
+    }
+    .rm-ok {
+      padding: 0.3rem 1rem;
+      font-family: inherit;
+      font-size: 0.85rem;
+      background: var(--bg-primary);
+      color: var(--yellow);
+      border: 1px solid var(--teal);
+      cursor: pointer;
+    }
+    .rm-ok:hover {
+      background: var(--teal);
+      color: var(--bg-primary);
+    }
+    .rm-status {
+      background: var(--teal);
+      color: var(--bg-primary);
+      font-size: 0.65rem;
+      padding: 0.2rem 0.6rem;
+      display: flex;
+      justify-content: space-between;
+      letter-spacing: 0.08em;
+      font-weight: bold;
     }
 
     .shuffle-btn {
@@ -481,8 +515,22 @@
         <input type="text" id="note-input" maxlength="20" placeholder="Your note..." aria-label="Leave a note">
         <button type="submit">pin it</button>
         <span class="char-count"><span id="char-current">0</span>/20 characters</span>
-        <span class="note-msg" id="note-msg" aria-live="polite"></span>
       </form>
+      <dialog id="rate-modal" aria-labelledby="rm-title">
+        <div class="rm-titlebar">
+          <span id="rm-title">▓▒░ HOLD_UP.EXE</span>
+          <span class="rm-chrome" aria-hidden="true">─ □ ×</span>
+        </div>
+        <div class="rm-body">
+          <p class="rm-msg">chill out bru</p>
+          <p class="rm-sub">one note per minute, please</p>
+          <button type="button" class="rm-ok">[ OK ]</button>
+        </div>
+        <div class="rm-status">
+          <span>ERR 429 · RATE LIMITED</span>
+          <span>PRESS [ OK ]</span>
+        </div>
+      </dialog>
     </section>
 
     <hr class="fancy">
@@ -519,14 +567,15 @@
     const board = document.getElementById('bulletin-board');
     const input = document.getElementById('note-input');
     const charCount = document.getElementById('char-current');
-    const noteMsg = document.getElementById('note-msg');
-    let msgTimer;
+    const rateModal = document.getElementById('rate-modal');
 
-    function flashMsg(text) {
-      noteMsg.textContent = text;
-      clearTimeout(msgTimer);
-      msgTimer = setTimeout(() => { noteMsg.textContent = ''; }, 4000);
+    function showRateLimit() {
+      if (!rateModal.open) rateModal.showModal();
     }
+    rateModal.addEventListener('click', (e) => {
+      if (e.target.closest('.rm-ok')) rateModal.close();
+    });
+    rateModal.addEventListener('cancel', (e) => e.preventDefault());
 
     input.addEventListener('input', () => {
       charCount.textContent = input.value.length;
@@ -585,7 +634,7 @@
       if (!text || text.length > 20) return false;
 
       if (rateLimitOn && Date.now() - lastPostTs < RATE_WINDOW_MS) {
-        flashMsg('chill out bru');
+        showRateLimit();
         return false;
       }
 
@@ -594,7 +643,6 @@
       const el = appendNote(note);
       input.value = '';
       charCount.textContent = '0';
-      noteMsg.textContent = '';
       lastPostTs = Date.now();
 
       fetch(API_URL, {
@@ -606,7 +654,7 @@
           el.remove();
           const i = notes.indexOf(note);
           if (i !== -1) notes.splice(i, 1);
-          flashMsg('chill out bru');
+          showRateLimit();
           return;
         }
         if (!res.ok) return;
