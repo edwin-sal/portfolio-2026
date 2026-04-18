@@ -171,7 +171,7 @@
         const post = await res.json();
         document.title = `${post.title} — edwin sal`;
         titleEl.textContent = post.title;
-        bylineEl.textContent = post.date;
+        bylineEl.textContent = `${post.date}, Edwin Sal`;
         colsEl.innerHTML = post.html;
       } catch (e) { /* silent */ }
       finally { clearLoader(); }
