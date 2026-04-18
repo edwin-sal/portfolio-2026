@@ -3,15 +3,13 @@ const { readFileSync } = require('node:fs');
 const { join } = require('node:path');
 
 const POSTS_KEY = 'posts';
+const TOPICS_KEY = 'topics';
+const TOPICS_USED_KEY = 'topics:used';
 const MAX_TITLE_LEN = 120;
 const MAX_HTML_LEN = 200_000;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 const STYLE_GUIDE = readFileSync(join(__dirname, 'prompt.md'), 'utf8');
-const TOPICS = readFileSync(join(__dirname, 'topics.txt'), 'utf8')
-  .split('\n')
-  .map((l) => l.trim())
-  .filter(Boolean);
 
 let redis;
 function getRedis() {
@@ -30,16 +28,9 @@ function slugify(title) {
     .replace(/^-+|-+$/g, '');
 }
 
-function pick(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function buildUserTurn(topic, recentTitles) {
-  const avoid = recentTitles.length
-    ? `\nRecent posts on this blog — pick a genuinely different angle, do NOT repeat these theses:\n${recentTitles.map((t) => `- ${t}`).join('\n')}\n`
-    : '';
+function buildUserTurn(topic) {
   return `Write a blog post in this style about: ${topic}
-${avoid}
+
 Output format (overrides any Markdown examples in the style guide — the site renders HTML, not Markdown):
 - The "title" field: the post title only, lowercase, no ending punctuation, under 80 characters. Do NOT wrap it in an <h1> and do NOT repeat it inside "html".
 - The "html" field: the body only, as an HTML fragment. No <html>, <head>, <body>, <h1>, <style>, or <script>. Allowed tags: <p>, <h3>, <h4>, <h5>, <ul>, <ol>, <li>, <em>, <strong>, <code>, <hr>, <a>, <blockquote>. No inline styles. No images.
@@ -117,22 +108,15 @@ module.exports = async (req, res) => {
     return res.json({ error: 'server not configured' });
   }
 
-  if (TOPICS.length === 0) {
-    res.statusCode = 500;
-    return res.json({ error: 'no topics' });
-  }
-
   try {
-    const existing = await client.zrange(POSTS_KEY, 0, -1);
-    const recentTitles = existing
-      .slice()
-      .reverse()
-      .slice(0, 10)
-      .map((p) => p?.title)
-      .filter((t) => typeof t === 'string');
+    const topic = await client.srandmember(TOPICS_KEY);
+    if (typeof topic !== 'string' || !topic.trim()) {
+      res.statusCode = 500;
+      return res.json({ error: 'topics exhausted' });
+    }
 
-    const topic = pick(TOPICS);
-    const userTurn = buildUserTurn(topic, recentTitles);
+    const existing = await client.zrange(POSTS_KEY, 0, -1);
+    const userTurn = buildUserTurn(topic);
     const generated = await callGemini(geminiKey, userTurn);
     const title = generated.title.trim();
     const html = generated.html;
@@ -164,6 +148,7 @@ module.exports = async (req, res) => {
       ts,
     };
     await client.zadd(POSTS_KEY, { score: ts, member: post });
+    await client.smove(TOPICS_KEY, TOPICS_USED_KEY, topic);
     return res.json({ ok: true, post });
   } catch (e) {
     res.statusCode = 502;
