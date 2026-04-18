@@ -340,6 +340,15 @@
       color: var(--coral);
     }
 
+    /* Post List */
+    .post-list { list-style: none; }
+    .post-list li { margin-bottom: 0.4rem; }
+    .post-list time {
+      color: var(--text-secondary);
+      margin-right: 0.5rem;
+      font-variant-numeric: tabular-nums;
+    }
+
     /* Contact */
     .contact-list {
       list-style: none;
@@ -476,7 +485,9 @@
 
     <section id="writing">
       <h2>writing</h2>
-      <p class="coming-soon">No posts yet. This space will grow over time.</p>
+      <ul class="post-list">
+        <li><time datetime="2026-04-18">2026-04-18</time> <a href="writing/every-web-browser-absolutely-sucks.html">every web browser absolutely sucks</a></li>
+      </ul>
     </section>
 
     <hr class="fancy">
