@@ -1,5 +1,5 @@
 {
-  "name": "portfolio-2026",
+  "name": "edwinsal",
   "private": true,
   "dependencies": {
     "@upstash/redis": "^1.37.0"
