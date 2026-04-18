@@ -485,9 +485,7 @@
 
     <section id="writing">
       <h2>writing</h2>
-      <ul class="post-list">
-        <li><time datetime="2026-04-18">2026-04-18</time> <a href="writing/every-web-browser-absolutely-sucks.html">every web browser absolutely sucks</a></li>
-      </ul>
+      <ul class="post-list" id="post-list"></ul>
     </section>
 
     <hr class="fancy">
@@ -695,6 +693,42 @@
 
     document.getElementById('shuffle-btn').addEventListener('click', shuffleNotes);
     document.addEventListener('DOMContentLoaded', loadNotes);
+
+    async function loadPosts() {
+      const list = document.getElementById('post-list');
+      if (!list) return;
+      try {
+        const res = await fetch('/api/posts?limit=6');
+        if (!res.ok) return;
+        const posts = await res.json();
+        if (!Array.isArray(posts) || posts.length === 0) return;
+        const latest = posts.slice(0, 5);
+        const frag = document.createDocumentFragment();
+        for (const p of latest) {
+          const li = document.createElement('li');
+          const time = document.createElement('time');
+          time.setAttribute('datetime', p.date);
+          time.textContent = p.date;
+          const a = document.createElement('a');
+          a.href = `writing/post.html?title=${encodeURIComponent(p.slug)}`;
+          a.textContent = p.title;
+          li.appendChild(time);
+          li.appendChild(document.createTextNode(' '));
+          li.appendChild(a);
+          frag.appendChild(li);
+        }
+        if (posts.length > 5) {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = 'writing/archive.html';
+          a.textContent = 'older posts →';
+          li.appendChild(a);
+          frag.appendChild(li);
+        }
+        list.appendChild(frag);
+      } catch (e) { /* silent */ }
+    }
+    document.addEventListener('DOMContentLoaded', loadPosts);
   </script>
 </body>
 </html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>edwin sal — writing</title>
+  <link rel="icon" href="../favicon.ico">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #1a1a2e;
+      --bg-secondary: #16213e;
+      --text-primary: #e8e6e3;
+      --text-secondary: #a9a9a9;
+      --teal: #40b4a6;
+      --pink: #e8a5ad;
+      --yellow: #f0d080;
+      --coral: #f0a090;
+    }
+
+    html { font-size: clamp(14px, 2.5vw, 18px); }
+
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      max-width: 80ch;
+      margin: 0 auto;
+      padding: 1rem 1rem 4rem;
+    }
+
+    a { color: var(--teal); text-decoration: none; }
+    a:hover { color: var(--pink); text-decoration: underline; }
+
+    .back {
+      display: inline-block;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin: 1rem 0 2rem;
+    }
+    .back:hover { color: var(--teal); text-decoration: none; }
+
+    .title {
+      font-size: clamp(1.4rem, 4vw, 1.8rem);
+      line-height: 1.15;
+      color: var(--pink);
+      font-weight: normal;
+      margin-bottom: 0.3rem;
+      text-transform: lowercase;
+    }
+    .title::before {
+      content: '> ';
+      color: var(--teal);
+    }
+
+    .byline {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-bottom: 2rem;
+    }
+
+    .cols {
+      column-count: 2;
+      column-gap: 2.5rem;
+      column-rule: 1px dashed var(--text-secondary);
+    }
+    .cols p { margin-bottom: 0.7rem; break-inside: avoid; }
+    .cols ul, .cols ol { margin: 0.4rem 0 0.8rem 1.3rem; break-inside: avoid; }
+    .cols li { margin-bottom: 0.2rem; }
+
+    h3 {
+      color: var(--pink);
+      font-size: 1rem;
+      font-weight: normal;
+      margin: 1.6rem 0 0.5rem;
+      text-transform: lowercase;
+      break-after: avoid;
+    }
+    h4 {
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      font-weight: normal;
+      margin: 1.2rem 0 0.3rem;
+      text-transform: lowercase;
+      break-after: avoid;
+    }
+    h5 {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: normal;
+      font-style: italic;
+      margin: 0.9rem 0 0.3rem;
+      text-transform: lowercase;
+      break-after: avoid;
+    }
+
+    em { font-style: italic; color: var(--coral); }
+    code {
+      font-family: inherit;
+      color: var(--yellow);
+    }
+
+    .loader {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin: 1rem 0;
+    }
+    .loader::before {
+      content: '> ';
+      color: var(--teal);
+    }
+    .loader::after {
+      content: '';
+      animation: dots 1.2s steps(4) infinite;
+    }
+    @keyframes dots {
+      0%   { content: ''; }
+      25%  { content: '.'; }
+      50%  { content: '..'; }
+      75%  { content: '...'; }
+      100% { content: ''; }
+    }
+
+    footer.meta {
+      margin-top: 2.5rem;
+      padding-top: 1rem;
+      border-top: 1px dashed var(--text-secondary);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    footer.meta a { color: var(--text-secondary); text-decoration: underline; }
+    footer.meta a:hover { color: var(--teal); }
+
+    @media (max-width: 640px) {
+      .cols { column-count: 1; column-rule: 0; }
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html#writing" class="back">← home</a>
+
+  <h1 class="title"></h1>
+  <p class="byline"></p>
+
+  <p class="loader" id="loader">loading</p>
+  <div class="cols"></div>
+
+  <footer class="meta">
+    <a href="../index.html#writing">← home</a>
+    <a href="archive.html">archive →</a>
+  </footer>
+
+  <script>
+    (async () => {
+      const slug = new URLSearchParams(location.search).get('title');
+      const titleEl = document.querySelector('.title');
+      const bylineEl = document.querySelector('.byline');
+      const colsEl = document.querySelector('.cols');
+      const loader = document.getElementById('loader');
+      const clearLoader = () => loader?.remove();
+      if (!slug) { clearLoader(); return; }
+      try {
+        const res = await fetch(`/api/posts?title=${encodeURIComponent(slug)}`);
+        if (!res.ok) { clearLoader(); return; }
+        const post = await res.json();
+        document.title = `${post.title} — edwin sal`;
+        titleEl.textContent = post.title;
+        bylineEl.textContent = post.date;
+        colsEl.innerHTML = post.html;
+      } catch (e) { /* silent */ }
+      finally { clearLoader(); }
+    })();
+  </script>
+</body>
+</html>

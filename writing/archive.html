@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>archive — edwin sal</title>
+  <meta name="description" content="All writing from edwin sal.">
+  <link rel="icon" href="../favicon.ico">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #1a1a2e;
+      --text-primary: #e8e6e3;
+      --text-secondary: #a9a9a9;
+      --teal: #40b4a6;
+      --pink: #e8a5ad;
+    }
+
+    html { font-size: clamp(14px, 2.5vw, 18px); }
+
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      max-width: 70ch;
+      margin: 0 auto;
+      padding: 1rem 1rem 4rem;
+    }
+
+    a { color: var(--teal); text-decoration: none; }
+    a:hover { color: var(--pink); text-decoration: underline; }
+
+    .back {
+      display: inline-block;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin: 1rem 0 2rem;
+    }
+    .back:hover { color: var(--teal); text-decoration: none; }
+
+    h1 {
+      color: var(--pink);
+      font-size: 1.2rem;
+      font-weight: normal;
+      margin-bottom: 1rem;
+      text-transform: lowercase;
+    }
+    h1::before {
+      content: '> ';
+      color: var(--teal);
+    }
+
+    .post-list { list-style: none; }
+    .post-list li { margin-bottom: 0.4rem; }
+    .post-list time {
+      color: var(--text-secondary);
+      margin-right: 0.5rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .empty {
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html#writing" class="back">← home</a>
+
+  <h1>archive</h1>
+  <ul class="post-list" id="post-list"></ul>
+
+  <script>
+    (async () => {
+      const list = document.getElementById('post-list');
+      try {
+        const res = await fetch('/api/posts');
+        if (!res.ok) return;
+        const posts = await res.json();
+        if (!Array.isArray(posts) || posts.length === 0) return;
+        const frag = document.createDocumentFragment();
+        for (const p of posts) {
+          const li = document.createElement('li');
+          const time = document.createElement('time');
+          time.setAttribute('datetime', p.date);
+          time.textContent = p.date;
+          const a = document.createElement('a');
+          a.href = `post.html?title=${encodeURIComponent(p.slug)}`;
+          a.textContent = p.title;
+          li.appendChild(time);
+          li.appendChild(document.createTextNode(' '));
+          li.appendChild(a);
+          frag.appendChild(li);
+        }
+        list.appendChild(frag);
+      } catch (e) { /* silent */ }
+    })();
+  </script>
+</body>
+</html>
