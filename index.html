@@ -93,23 +93,24 @@
 
     /* Bulletin board — cream panel, handwriting notes */
     #bulletin-board {
+      position: relative;
       background: #f6f2e9;
-      padding: 1.2rem 1.4rem;
+      padding: 1rem;
       margin: 1rem 0;
       min-height: 280px;
+      overflow: hidden;
     }
 
     .note {
-      display: inline-block;
+      position: absolute;
       background: #fff8d8;
       padding: .4rem .7rem;
-      font-size: .85rem;
-      margin: .2rem;
-      box-shadow: 0 1px 0 rgba(0,0,0,.08);
+      font-size: .9rem;
+      box-shadow: 2px 2px 4px rgba(0,0,0,.12);
       font-family: "Bradley Hand", "Segoe Script", cursive;
       color: #333;
       cursor: pointer;
-      max-width: 100%;
+      max-width: 140px;
       word-wrap: break-word;
     }
 
@@ -117,6 +118,10 @@
     .note .back { display: none; font-size: .75rem; line-height: 1.3; }
     .note.flipped .face { display: none; }
     .note.flipped .back { display: block; }
+
+    @media (max-width: 500px) {
+      #bulletin-board { min-height: 350px; }
+    }
 
     .note-form {
       margin-top: 1rem;
@@ -281,8 +286,12 @@
       charCount.textContent = input.value.length;
     });
 
-    function randomTilt() {
-      return `rotate(${(Math.random() - 0.5) * 4}deg)`;
+    let topZ = 0;
+
+    function randomPlacement(el) {
+      el.style.left = `${5 + (Math.random() * 75)}%`;
+      el.style.top = `${5 + (Math.random() * 75)}%`;
+      el.style.transform = `rotate(${(Math.random() - 0.5) * 20}deg)`;
     }
 
     function backText(note) {
@@ -308,7 +317,8 @@
       el.appendChild(back);
 
       el.addEventListener('click', () => el.classList.toggle('flipped'));
-      el.style.transform = randomTilt();
+      randomPlacement(el);
+      el.style.zIndex = ++topZ;
       board.appendChild(el);
       return el;
     }
@@ -321,6 +331,7 @@
         const data = await res.json();
         notes = Array.isArray(data) ? data : [];
         board.innerHTML = '';
+        topZ = 0;
         notes.forEach(appendNote);
       } catch (e) { /* silent */ }
     }
@@ -368,15 +379,13 @@
 
     function shuffleNotes() {
       const els = Array.from(board.children);
-      const order = [...els.keys()].sort(() => Math.random() - 0.5);
-      const frag = document.createDocumentFragment();
-      order.forEach((idx) => {
-        const el = els[idx];
+      const zOrder = [...els.keys()].sort(() => Math.random() - 0.5);
+      els.forEach((el, i) => {
         el.classList.remove('flipped');
-        el.style.transform = randomTilt();
-        frag.appendChild(el);
+        randomPlacement(el);
+        el.style.zIndex = zOrder[i];
       });
-      board.appendChild(frag);
+      topZ = els.length;
     }
 
     document.getElementById('shuffle-btn').addEventListener('click', shuffleNotes);
