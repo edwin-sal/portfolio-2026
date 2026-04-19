@@ -270,7 +270,7 @@
   </main>
 
   <footer>
-    <p>You are visitor #00001247 &middot; Last updated April 17, 2026 &middot; under 1 megabyte</p>
+    <p>You are visitor #<span id="visitor-count">&hellip;</span> &middot; Last updated April 19, 2026 &middot; under 1 megabyte</p>
   </footer>
 
   <script>
@@ -396,6 +396,17 @@
 
     document.getElementById('shuffle-btn').addEventListener('click', shuffleNotes);
     document.addEventListener('DOMContentLoaded', loadNotes);
+
+    async function loadVisitorCount() {
+      try {
+        const res = await fetch('/api/visitors');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (typeof data.count !== 'number') return;
+        document.getElementById('visitor-count').textContent = String(data.count);
+      } catch (e) { /* silent */ }
+    }
+    document.addEventListener('DOMContentLoaded', loadVisitorCount);
 
     function formatDate(iso) {
       const [y, m, d] = iso.split('-');
