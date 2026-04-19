@@ -19,6 +19,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+tmp/
 
 # Internal docs
 handoff/

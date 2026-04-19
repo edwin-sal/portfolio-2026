@@ -6,514 +6,219 @@
   <title>Edwin Sal - AI Developer</title>
   <meta name="description" content="Personal portfolio of Edwin Bañago, AI Developer based in Makati, Philippines.">
   <style>
-    /* CSS Reset */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* CSS Custom Properties */
-    :root {
-      --bg-primary: #1a1a2e;
-      --bg-secondary: #16213e;
-      --text-primary: #e8e6e3;
-      --text-secondary: #a9a9a9;
-      --teal: #40b4a6;
-      --teal-light: #5fcfbf;
-      --pink: #e8a5ad;
-      --pink-light: #f0c0c8;
-      --yellow: #f0d080;
-      --green: #7cb07c;
-      --coral: #f0a090;
-      --link: #40b4a6;
-      --link-hover: #e8a5ad;
-      --link-visited: #c090a0;
-    }
-
-    /* Typography */
-    html {
-      font-size: clamp(14px, 2.5vw, 18px);
-    }
-
     body {
-      font-family: 'Courier New', Courier, monospace;
-      background-color: var(--bg-primary);
-      color: var(--text-primary);
-      line-height: 1.6;
-      max-width: 70ch;
+      background: #fdfcf9;
+      color: #1a1a1a;
+      font-family: "Iowan Old Style", "Palatino Linotype", "URW Palladio L",
+                   P052, Georgia, serif;
+      font-size: 23px;
+      line-height: 1.7;
+      max-width: 62ch;
       margin: 0 auto;
-      padding: 1rem;
+      padding: 3.5rem 2rem 3rem;
     }
 
-    /* Links */
-    a {
-      color: var(--link);
-      text-decoration: none;
-    }
-
-    a:hover {
-      color: var(--link-hover);
-      text-decoration: underline;
-    }
-
-    a:visited {
-      color: var(--link-visited);
-    }
-
-    /* ASCII Header */
-    .ascii-header {
-      font-family: 'Courier New', 'Lucida Console', 'DejaVu Sans Mono', monospace;
-      font-size: clamp(16px, 3.5vw, 30px);
-      line-height: 1;
-      white-space: pre;
-      color: var(--teal);
-      text-align: center;
-      margin: 1.5rem 0 0.5rem 0;
-      overflow: hidden;
+    h1 {
+      font-size: 2.9rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin: 0 0 .2rem;
+      font-family: "Charter", "Charis SIL", "Iowan Old Style", Georgia, serif;
     }
 
     .tagline {
-      text-align: center;
-      color: var(--text-secondary);
-      margin-bottom: 1rem;
-      font-size: 1.1rem;
-    }
-
-    /* Sections */
-    section {
-      margin: 1.5rem 0;
+      color: #666;
+      font-style: italic;
+      font-size: 1.2rem;
+      margin: 0 0 2.5rem;
     }
 
     h2 {
-      color: var(--pink);
-      font-size: 1.2rem;
-      margin-bottom: 0.75rem;
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin: 2.5rem 0 .8rem;
+      padding-top: .8rem;
+      border-top: 1px solid #e0ddd5;
+      letter-spacing: .01em;
       text-transform: lowercase;
     }
 
-    h2::before {
-      content: '> ';
-      color: var(--teal);
+    p { margin: 0 0 1rem; }
+
+    a {
+      color: #a33;
+      text-decoration: none;
+      border-bottom: 1px solid #e3c7c7;
+    }
+    a:hover { border-bottom-color: #a33; }
+    a:visited { color: #7a2020; }
+
+    .post-list { list-style: none; padding: 0; margin: 0; }
+    .post-list li { margin: .35rem 0; display: flex; gap: 1rem; }
+    .post-list time {
+      color: #888;
+      font-variant-numeric: tabular-nums;
+      flex: 0 0 11rem;
+      font-size: .9rem;
+      padding-top: 2px;
     }
 
-    p {
-      margin-bottom: 0.75rem;
-    }
+    .loader { color: #888; font-style: italic; font-size: .95rem; }
 
-    /* Fancy HR Dividers */
-    hr.fancy {
-      border: 0;
-      height: 3px;
-      background: linear-gradient(90deg,
-        var(--coral) 0%,
-        var(--yellow) 25%,
-        var(--green) 50%,
-        var(--teal) 75%,
-        var(--pink) 100%
-      );
-      margin: 1.5rem 0;
-      animation: rainbow-shift 8s linear infinite;
-      background-size: 200% 100%;
-    }
-
-    @keyframes rainbow-shift {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 200% 50%; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      hr.fancy {
-        animation: none;
-        background-size: 100% 100%;
-      }
-      .spin,
-      .under-construction,
-      #rate-modal[open] {
-        animation: none;
-      }
-      .ticker {
-        animation: none;
-        flex-wrap: wrap;
-      }
-      .ticker-wrap {
-        overflow: visible;
-      }
-    }
-
-    /* Projects - Under Construction */
-    .under-construction {
-      display: inline-block;
-      padding: 0.25rem 0.5rem;
-      background: repeating-linear-gradient(
-        45deg,
-        var(--yellow),
-        var(--yellow) 10px,
-        var(--text-primary) 10px,
-        var(--text-primary) 20px
-      );
-      background-size: 28px 28px;
-      animation: hazard-scroll 0.8s linear infinite;
-      color: var(--bg-primary);
-      font-weight: bold;
-      font-size: 0.8rem;
-      margin-left: 0.5rem;
-    }
-
-    @keyframes hazard-scroll {
-      to { background-position: 28px 0; }
-    }
-
-    .coming-soon {
-      color: var(--text-secondary);
-      font-style: italic;
-    }
-
-    /* Cool Links - Ticker */
+    /* Scrolling marquee for cool links */
     .ticker-wrap {
       overflow: hidden;
-      padding: 0.6rem 0;
-      margin-top: 0.75rem;
+      padding: .4rem 0;
+      margin-top: .5rem;
     }
-
     .ticker {
       display: inline-flex;
       gap: 2rem;
-      animation: ticker-scroll 20s linear infinite;
+      animation: ticker-scroll 30s linear infinite;
       white-space: nowrap;
     }
-
-    .ticker:hover {
-      animation-play-state: paused;
-    }
-
+    .ticker:hover { animation-play-state: paused; }
     .ticker-item {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      font-size: 0.9rem;
+      gap: .5rem;
     }
-
-    .ticker-item .sep {
-      color: var(--coral);
-    }
-
+    .ticker-item .sep { color: #a33; }
     @keyframes ticker-scroll {
-      0% { transform: translateX(0); }
+      0%   { transform: translateX(0); }
       100% { transform: translateX(-50%); }
     }
 
-    /* Bulletin Board */
+    /* Bulletin board — cream panel, handwriting notes */
     #bulletin-board {
-      position: relative;
-      min-height: 280px;
-      background: var(--bg-secondary);
-      border: 2px dashed var(--teal);
+      background: #f6f2e9;
+      padding: 1.2rem 1.4rem;
       margin: 1rem 0;
-      padding: 1rem;
-      overflow: hidden;
+      min-height: 280px;
     }
 
     .note {
-      position: absolute;
-      padding: 0.4rem 0.6rem;
-      background: var(--yellow);
-      color: #2d3436;
-      font-size: 0.75rem;
-      max-width: 110px;
+      display: inline-block;
+      background: #fff8d8;
+      padding: .4rem .7rem;
+      font-size: .85rem;
+      margin: .2rem;
+      box-shadow: 0 1px 0 rgba(0,0,0,.08);
+      font-family: "Bradley Hand", "Segoe Script", cursive;
+      color: #333;
+      cursor: pointer;
+      max-width: 100%;
       word-wrap: break-word;
-      box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
     }
 
     .note .face, .note .back { display: block; }
-    .note .back { display: none; font-size: 0.65rem; line-height: 1.2; }
+    .note .back { display: none; font-size: .75rem; line-height: 1.3; }
     .note.flipped .face { display: none; }
     .note.flipped .back { display: block; }
 
     .note-form {
       margin-top: 1rem;
       display: flex;
-      gap: 0.5rem;
+      gap: .5rem;
       flex-wrap: wrap;
+      align-items: center;
     }
 
     .note-form input {
       flex: 1;
       min-width: 150px;
-      padding: 0.4rem;
+      padding: .45rem .6rem;
       font-family: inherit;
-      font-size: 0.9rem;
-      border: 1px solid var(--teal);
-      background: var(--bg-primary);
-      color: var(--text-primary);
+      font-size: .95rem;
+      background: #fdfcf9;
+      color: #1a1a1a;
+      border: 1px solid #e0ddd5;
     }
 
-    .note-form button {
-      padding: 0.4rem 0.8rem;
+    .note-form input:focus {
+      outline: none;
+      border-color: #a33;
+    }
+
+    .note-form button[type="submit"] {
+      padding: .45rem .9rem;
       font-family: inherit;
-      font-size: 0.9rem;
-      background: var(--teal);
-      color: var(--bg-primary);
-      border: none;
+      font-size: .95rem;
+      background: #f6f2e9;
+      color: #a33;
+      border: 1px solid #e0ddd5;
       cursor: pointer;
     }
 
-    .note-form button:hover {
-      background: var(--teal-light);
+    .note-form button[type="submit"]:hover {
+      border-color: #a33;
     }
 
     .char-count {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
+      font-size: .8rem;
+      color: #888;
       width: 100%;
-    }
-
-    /* BBS-window Rate Modal */
-    #rate-modal {
-      border: 2px solid var(--teal);
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      font-family: inherit;
-      width: min(300px, 90vw);
-      margin: auto;
-      padding: 0;
-      box-shadow: 6px 6px 0 var(--bg-primary), 6px 6px 0 1px var(--teal);
-    }
-    #rate-modal::backdrop { background: rgba(0,0,0,0.5); }
-    html:has(#rate-modal[open]) { overflow: hidden; }
-    #rate-modal[open] { animation: pop-in 0.15s ease-out; }
-    @keyframes pop-in {
-      from { transform: scale(0.92); opacity: 0; }
-      to   { transform: scale(1);    opacity: 1; }
-    }
-    .rm-titlebar {
-      background: var(--teal);
-      color: var(--bg-primary);
-      padding: 0.3rem 0.6rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.75rem;
-      font-weight: bold;
-      letter-spacing: 0.05em;
-    }
-    .rm-titlebar .rm-chrome { letter-spacing: 0.2em; }
-    .rm-body { padding: 1.1rem 1rem 0.9rem; text-align: center; }
-    .rm-msg { font-size: 1rem; margin-bottom: 0.2rem; color: var(--pink); }
-    .rm-sub {
-      font-size: 0.7rem;
-      color: var(--text-secondary);
-      font-style: italic;
-      margin-bottom: 0.9rem;
-    }
-    .rm-ok {
-      padding: 0.3rem 1rem;
-      font-family: inherit;
-      font-size: 0.85rem;
-      background: var(--bg-primary);
-      color: var(--yellow);
-      border: 1px solid var(--teal);
-      cursor: pointer;
-    }
-    .rm-ok:hover {
-      background: var(--teal);
-      color: var(--bg-primary);
-    }
-    .rm-status {
-      background: var(--teal);
-      color: var(--bg-primary);
-      font-size: 0.65rem;
-      padding: 0.2rem 0.6rem;
-      display: flex;
-      justify-content: space-between;
-      letter-spacing: 0.08em;
-      font-weight: bold;
     }
 
     .shuffle-btn {
       background: none;
       border: none;
-      color: var(--yellow);
+      color: #a33;
       font-family: inherit;
       font-size: inherit;
       cursor: pointer;
       padding: 0;
+      border-bottom: 1px solid #e3c7c7;
     }
+    .shuffle-btn:hover { border-bottom-color: #a33; }
 
-    .shuffle-btn:hover {
-      color: var(--coral);
-    }
-
-    /* Post List */
-    .post-list { list-style: none; }
-    .post-list li { margin-bottom: 0.4rem; }
-    .post-list time {
-      color: var(--text-secondary);
-      margin-right: 0.5rem;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .loader {
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      margin: 0.2rem 0;
-    }
-    .loader::before {
-      content: '> ';
-      color: var(--teal);
-    }
-    .loader::after {
-      content: '';
-      animation: dots 1.2s steps(4) infinite;
-    }
-    @keyframes dots {
-      0%   { content: ''; }
-      25%  { content: '.'; }
-      50%  { content: '..'; }
-      75%  { content: '...'; }
-      100% { content: ''; }
-    }
-
-    /* Contact */
-    .contact-list {
-      list-style: none;
-    }
-
-    .contact-list li {
-      margin-bottom: 0.5rem;
-    }
-
-    .spin {
-      display: inline-block;
-      animation: spin 3s linear infinite;
-    }
-
-    .contact-list li:has(a:hover) .spin {
-      animation-play-state: paused;
-    }
-
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    /* Footer */
     footer {
-      margin-top: 2rem;
+      margin-top: 3rem;
       padding-top: 1rem;
-      text-align: center;
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-    }
-
-    .visitor-counter {
-      margin-bottom: 1rem;
+      border-top: 1px solid #e0ddd5;
+      color: #888;
+      font-size: .85rem;
       font-style: italic;
     }
 
-    /* 88x31 Badges */
-    .badges {
-      display: flex;
-      gap: 0.5rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin: 1rem 0;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 88px;
-      height: 31px;
-      font-size: 9px;
-      font-family: Arial, sans-serif;
-      text-decoration: none;
-      border: 1px solid var(--text-secondary);
-      background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
-      color: var(--text-primary);
-    }
-
-    .badge:hover {
-      border-color: var(--teal);
-      color: var(--text-primary);
-      text-decoration: none;
-    }
-
-    .badge-html {
-      background: linear-gradient(180deg, #e34c26 0%, #c73e1d 100%);
-      color: #fff;
-      border-color: #c73e1d;
-    }
-
-    .badge-1mb {
-      background: linear-gradient(180deg, var(--teal) 0%, var(--green) 100%);
-      color: #fff;
-      border-color: var(--green);
-    }
-
-    .badge-eyes {
-      background: linear-gradient(180deg, var(--pink-light) 0%, var(--pink) 100%);
-      color: var(--bg-primary);
-      border-color: var(--pink);
-    }
-
-    .last-updated {
-      margin-top: 1rem;
-      font-size: 0.8rem;
-    }
-
-    /* Mobile adjustments */
-    @media (max-width: 500px) {
-      .ascii-header {
-        font-size: 10px;
-      }
-
-      #bulletin-board {
-        min-height: 350px;
-      }
+    @media (prefers-reduced-motion: reduce) {
+      .ticker { animation: none; flex-wrap: wrap; white-space: normal; }
+      .ticker-wrap { overflow: visible; }
     }
   </style>
 </head>
 <body>
   <header>
-    <pre class="ascii-header" role="img" aria-label="Edwin Sal">
-░█▀▀░█▀▄░█░█░▀█▀░█▀█░░░█▀▀░█▀█░█░░
-░█▀▀░█░█░█▄█░░█░░█░█░░░▀▀█░█▀█░█░░
-░▀▀▀░▀▀░░▀░▀░▀▀▀░▀░▀░░░▀▀▀░▀░▀░▀▀▀</pre>
-    <p class="tagline">AI Developer - Makati, Philippines</p>
+    <h1>Edwin Sal</h1>
+    <p class="tagline">AI Developer, Makati, Philippines</p>
   </header>
-
-  <hr class="fancy">
 
   <main>
     <section id="about">
-      <h2>about</h2>
+      <h2>About</h2>
       <p>I spend a lot of time figuring out how to do less, better. Lately, that involves letting systems take a first pass and then shaping what comes out. It's surprisingly effective.</p>
     </section>
 
-    <hr class="fancy">
-
     <section id="now">
-      <h2>now</h2>
+      <h2>Now</h2>
       <p>This section is where I share what I'm currently working on or thinking about. Check back soon for updates.</p>
     </section>
 
-    <hr class="fancy">
-
     <section id="projects">
-      <h2>projects <span class="under-construction">UNDER CONSTRUCTION</span></h2>
-      <p class="coming-soon">Projects coming soon. I'm working on documenting some things worth sharing.</p>
+      <h2>Projects</h2>
+      <p><em>(Coming soon — working on documenting some things worth sharing.)</em></p>
     </section>
 
-    <hr class="fancy">
-
     <section id="writing">
-      <h2>writing</h2>
-      <p class="loader" id="writing-loader">loading</p>
+      <h2>Writing</h2>
+      <p class="loader" id="writing-loader">loading&hellip;</p>
       <ul class="post-list" id="post-list"></ul>
     </section>
 
-    <hr class="fancy">
-
     <section id="cool-links">
-      <h2>cool links</h2>
+      <h2>Cool links</h2>
       <div class="ticker-wrap">
         <div class="ticker">
           <span class="ticker-item"><span class="sep">*</span> <a href="https://bellard.org" target="_blank" rel="noopener">bellard.org</a></span>
@@ -522,24 +227,22 @@
           <span class="ticker-item"><span class="sep">*</span> <a href="https://wiby.me" target="_blank" rel="noopener">wiby.me</a></span>
           <span class="ticker-item"><span class="sep">*</span> <a href="https://radio.garden" target="_blank" rel="noopener">radio.garden</a></span>
           <span class="ticker-item"><span class="sep">*</span> <a href="https://1mb.club" target="_blank" rel="noopener">1mb.club</a></span>
-          <span class="ticker-item"><span class="sep">*</span> <a href="https://bellard.org" target="_blank" rel="noopener">bellard.org</a></span>
-          <span class="ticker-item"><span class="sep">*</span> <a href="https://neal.fun" target="_blank" rel="noopener">neal.fun</a></span>
-          <span class="ticker-item"><span class="sep">*</span> <a href="https://ooh.directory" target="_blank" rel="noopener">ooh.directory</a></span>
-          <span class="ticker-item"><span class="sep">*</span> <a href="https://wiby.me" target="_blank" rel="noopener">wiby.me</a></span>
-          <span class="ticker-item"><span class="sep">*</span> <a href="https://radio.garden" target="_blank" rel="noopener">radio.garden</a></span>
-          <span class="ticker-item"><span class="sep">*</span> <a href="https://1mb.club" target="_blank" rel="noopener">1mb.club</a></span>
+          <span class="ticker-item" aria-hidden="true"><span class="sep">*</span> <a href="https://bellard.org" target="_blank" rel="noopener" tabindex="-1">bellard.org</a></span>
+          <span class="ticker-item" aria-hidden="true"><span class="sep">*</span> <a href="https://neal.fun" target="_blank" rel="noopener" tabindex="-1">neal.fun</a></span>
+          <span class="ticker-item" aria-hidden="true"><span class="sep">*</span> <a href="https://ooh.directory" target="_blank" rel="noopener" tabindex="-1">ooh.directory</a></span>
+          <span class="ticker-item" aria-hidden="true"><span class="sep">*</span> <a href="https://wiby.me" target="_blank" rel="noopener" tabindex="-1">wiby.me</a></span>
+          <span class="ticker-item" aria-hidden="true"><span class="sep">*</span> <a href="https://radio.garden" target="_blank" rel="noopener" tabindex="-1">radio.garden</a></span>
+          <span class="ticker-item" aria-hidden="true"><span class="sep">*</span> <a href="https://1mb.club" target="_blank" rel="noopener" tabindex="-1">1mb.club</a></span>
         </div>
       </div>
     </section>
 
-    <hr class="fancy">
-
     <section id="bulletin">
-      <h2>bulletin board</h2>
-      <p>Leave a note! 20 characters max. Be pithy. <button type="button" class="shuffle-btn" id="shuffle-btn" aria-label="Shuffle notes">[ shuffle ]</button></p>
+      <h2>Bulletin board</h2>
+      <p>Leave a note. 20 characters max. Be pithy. <button type="button" class="shuffle-btn" id="shuffle-btn" aria-label="Shuffle notes">[ shuffle ]</button></p>
       <div id="bulletin-board">
         <noscript>
-          <p style="padding: 1rem; color: var(--text-secondary);">Enable JavaScript to see and leave notes.</p>
+          <p>Enable JavaScript to see and leave notes.</p>
         </noscript>
       </div>
       <form class="note-form" onsubmit="return handleSubmit(event)">
@@ -547,45 +250,16 @@
         <button type="submit">pin it</button>
         <span class="char-count"><span id="char-current">0</span>/20 characters</span>
       </form>
-      <dialog id="rate-modal" aria-labelledby="rm-title">
-        <div class="rm-titlebar">
-          <span id="rm-title">▓▒░ HOLD_UP.EXE</span>
-          <span class="rm-chrome" aria-hidden="true">─ □ ×</span>
-        </div>
-        <div class="rm-body">
-          <p class="rm-msg">chill out bru</p>
-          <p class="rm-sub">one note per minute, please</p>
-          <button type="button" class="rm-ok">[ OK ]</button>
-        </div>
-        <div class="rm-status">
-          <span>ERR 429 · RATE LIMITED</span>
-          <span>PRESS [ OK ]</span>
-        </div>
-      </dialog>
     </section>
 
-    <hr class="fancy">
-
     <section id="contact">
-      <h2>contact</h2>
-      <ul class="contact-list">
-        <li><span class="spin">📧</span> <a href="mailto:edwinbanago692@gmail.com">edwinbanago692@gmail.com</a></li>
-        <li><span class="spin">💻</span> <a href="https://github.com/edwin-sal" target="_blank" rel="noopener">github.com/edwin-sal</a></li>
-        <li><span class="spin">👤</span> <a href="https://linkedin.com/in/edwin-sal" target="_blank" rel="noopener">linkedin.com/in/edwin-sal</a></li>
-      </ul>
+      <h2>Contact</h2>
+      <p><a href="mailto:edwinbanago692@gmail.com">edwinbanago692@gmail.com</a> &middot; <a href="https://github.com/edwin-sal" target="_blank" rel="noopener">github</a> &middot; <a href="https://linkedin.com/in/edwin-sal" target="_blank" rel="noopener">linkedin</a></p>
     </section>
   </main>
 
-  <hr class="fancy">
-
   <footer>
-    <p class="visitor-counter">You are visitor #00001247</p>
-    <div class="badges">
-      <span class="badge badge-html">MADE WITH HTML</span>
-      <a href="https://1mb.club" target="_blank" rel="noopener" class="badge badge-1mb">&lt;1MB CLUB</a>
-      <span class="badge badge-eyes">BEST VIEWED<br>WITH EYES</span>
-    </div>
-    <p class="last-updated">Last updated: April 17, 2026</p>
+    <p>You are visitor #00001247 &middot; Last updated April 17, 2026 &middot; under 1 megabyte</p>
   </footer>
 
   <script>
@@ -598,21 +272,18 @@
     const board = document.getElementById('bulletin-board');
     const input = document.getElementById('note-input');
     const charCount = document.getElementById('char-current');
-    const rateModal = document.getElementById('rate-modal');
 
     function showRateLimit() {
-      if (!rateModal.open) rateModal.showModal();
+      alert('chill out bru — one note per minute, please');
     }
-    rateModal.addEventListener('click', (e) => {
-      if (e.target.closest('.rm-ok')) rateModal.close();
-    });
-    rateModal.addEventListener('cancel', (e) => e.preventDefault());
 
     input.addEventListener('input', () => {
       charCount.textContent = input.value.length;
     });
 
-    let topZ = 0;
+    function randomTilt() {
+      return `rotate(${(Math.random() - 0.5) * 4}deg)`;
+    }
 
     function backText(note) {
       const where = note.geo
@@ -637,11 +308,7 @@
       el.appendChild(back);
 
       el.addEventListener('click', () => el.classList.toggle('flipped'));
-
-      el.style.left = `${5 + (Math.random() * 75)}%`;
-      el.style.top = `${5 + (Math.random() * 75)}%`;
-      el.style.transform = `rotate(${(Math.random() - 0.5) * 20}deg)`;
-      el.style.zIndex = ++topZ;
+      el.style.transform = randomTilt();
       board.appendChild(el);
       return el;
     }
@@ -654,7 +321,6 @@
         const data = await res.json();
         notes = Array.isArray(data) ? data : [];
         board.innerHTML = '';
-        topZ = 0;
         notes.forEach(appendNote);
       } catch (e) { /* silent */ }
     }
@@ -702,19 +368,27 @@
 
     function shuffleNotes() {
       const els = Array.from(board.children);
-      const zOrder = [...els.keys()].sort(() => Math.random() - 0.5);
-      els.forEach((el, i) => {
+      const order = [...els.keys()].sort(() => Math.random() - 0.5);
+      const frag = document.createDocumentFragment();
+      order.forEach((idx) => {
+        const el = els[idx];
         el.classList.remove('flipped');
-        el.style.left = `${5 + (Math.random() * 75)}%`;
-        el.style.top = `${5 + (Math.random() * 75)}%`;
-        el.style.transform = `rotate(${(Math.random() - 0.5) * 20}deg)`;
-        el.style.zIndex = zOrder[i];
+        el.style.transform = randomTilt();
+        frag.appendChild(el);
       });
-      topZ = els.length;
+      board.appendChild(frag);
     }
 
     document.getElementById('shuffle-btn').addEventListener('click', shuffleNotes);
     document.addEventListener('DOMContentLoaded', loadNotes);
+
+    function formatDate(iso) {
+      const [y, m, d] = iso.split('-');
+      const weekday = new Date(`${iso}T00:00:00`)
+        .toLocaleDateString('en-US', { weekday: 'long' })
+        .toLowerCase();
+      return `${m}/${d}/${y}, ${weekday}`;
+    }
 
     async function loadPosts() {
       const list = document.getElementById('post-list');
@@ -731,17 +405,20 @@
           const li = document.createElement('li');
           const time = document.createElement('time');
           time.setAttribute('datetime', p.date);
-          time.textContent = p.date;
+          time.textContent = formatDate(p.date);
           const a = document.createElement('a');
           a.href = `writing/post.html?title=${encodeURIComponent(p.slug)}`;
           a.textContent = p.title;
+          a.target = '_blank';
+          a.rel = 'noopener';
           li.appendChild(time);
-          li.appendChild(document.createTextNode(' '));
           li.appendChild(a);
           frag.appendChild(li);
         }
         if (posts.length > 5) {
           const li = document.createElement('li');
+          const time = document.createElement('time');
+          li.appendChild(time);
           const a = document.createElement('a');
           a.href = 'writing/archive.html';
           a.textContent = 'older posts →';

@@ -3,98 +3,86 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>archive — edwin sal</title>
-  <meta name="description" content="All writing from edwin sal.">
+  <title>Archive — Edwin Sal</title>
+  <meta name="description" content="All writing from Edwin Sal.">
   <link rel="icon" href="../favicon.ico">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --bg-primary: #1a1a2e;
-      --text-primary: #e8e6e3;
-      --text-secondary: #a9a9a9;
-      --teal: #40b4a6;
-      --pink: #e8a5ad;
-    }
-
-    html { font-size: clamp(14px, 2.5vw, 18px); }
-
     body {
-      font-family: 'Courier New', Courier, monospace;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      line-height: 1.6;
-      max-width: 70ch;
+      background: #fdfcf9;
+      color: #1a1a1a;
+      font-family: "Iowan Old Style", "Palatino Linotype", "URW Palladio L",
+                   P052, Georgia, serif;
+      font-size: 23px;
+      line-height: 1.7;
+      max-width: 62ch;
       margin: 0 auto;
-      padding: 1rem 1rem 4rem;
+      padding: 3.5rem 2rem 3rem;
     }
 
-    a { color: var(--teal); text-decoration: none; }
-    a:hover { color: var(--pink); text-decoration: underline; }
+    a {
+      color: #a33;
+      text-decoration: none;
+      border-bottom: 1px solid #e3c7c7;
+    }
+    a:hover { border-bottom-color: #a33; }
+    a:visited { color: #7a2020; }
 
     .back {
       display: inline-block;
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      margin: 1rem 0 2rem;
+      color: #666;
+      font-size: .9rem;
+      font-style: italic;
+      margin: 0 0 2.5rem;
+      border-bottom: none;
     }
-    .back:hover { color: var(--teal); text-decoration: none; }
+    .back:hover { color: #a33; border-bottom: none; }
+    .back:visited { color: #666; }
 
     h1 {
-      color: var(--pink);
-      font-size: 1.2rem;
-      font-weight: normal;
-      margin-bottom: 1rem;
+      font-size: 2.9rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin: 0 0 1.5rem;
+      font-family: "Charter", "Charis SIL", "Iowan Old Style", Georgia, serif;
       text-transform: lowercase;
     }
-    h1::before {
-      content: '> ';
-      color: var(--teal);
-    }
 
-    .post-list { list-style: none; }
-    .post-list li { margin-bottom: 0.4rem; }
+    .post-list { list-style: none; padding: 0; margin: 0; }
+    .post-list li { margin: .35rem 0; display: flex; gap: 1rem; }
     .post-list time {
-      color: var(--text-secondary);
-      margin-right: 0.5rem;
+      color: #888;
       font-variant-numeric: tabular-nums;
+      flex: 0 0 11rem;
+      font-size: .9rem;
+      padding-top: 2px;
     }
 
-    .empty {
-      color: var(--text-secondary);
+    .empty, .loader {
+      color: #888;
       font-style: italic;
+      font-size: .95rem;
     }
 
-    .loader {
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      margin: 0.2rem 0;
-    }
-    .loader::before {
-      content: '> ';
-      color: var(--teal);
-    }
-    .loader::after {
-      content: '';
-      animation: dots 1.2s steps(4) infinite;
-    }
-    @keyframes dots {
-      0%   { content: ''; }
-      25%  { content: '.'; }
-      50%  { content: '..'; }
-      75%  { content: '...'; }
-      100% { content: ''; }
-    }
   </style>
 </head>
 <body>
   <a href="../index.html#writing" class="back">← home</a>
 
-  <h1>archive</h1>
-  <p class="loader" id="archive-loader">loading</p>
+  <h1>Archive</h1>
+  <p class="loader" id="archive-loader">loading&hellip;</p>
   <ul class="post-list" id="post-list"></ul>
 
   <script>
+    function formatDate(iso) {
+      const [y, m, d] = iso.split('-');
+      const weekday = new Date(`${iso}T00:00:00`)
+        .toLocaleDateString('en-US', { weekday: 'long' })
+        .toLowerCase();
+      return `${m}/${d}/${y}, ${weekday}`;
+    }
+
     (async () => {
       const list = document.getElementById('post-list');
       const loader = document.getElementById('archive-loader');
@@ -108,12 +96,13 @@
           const li = document.createElement('li');
           const time = document.createElement('time');
           time.setAttribute('datetime', p.date);
-          time.textContent = p.date;
+          time.textContent = formatDate(p.date);
           const a = document.createElement('a');
           a.href = `post.html?title=${encodeURIComponent(p.slug)}`;
           a.textContent = p.title;
+          a.target = '_blank';
+          a.rel = 'noopener';
           li.appendChild(time);
-          li.appendChild(document.createTextNode(' '));
           li.appendChild(a);
           frag.appendChild(li);
         }
