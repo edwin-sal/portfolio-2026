@@ -7,7 +7,7 @@ const TOPICS_KEY = 'topics';
 const TOPICS_USED_KEY = 'topics:used';
 const MAX_TITLE_LEN = 120;
 const MAX_HTML_LEN = 200_000;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite-preview';
 
 const STYLE_GUIDE = readFileSync(join(__dirname, 'prompt.md'), 'utf8');
 
