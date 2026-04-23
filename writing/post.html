@@ -172,12 +172,18 @@
   </footer>
 
   <script>
-    function formatDate(iso) {
+    function formatDate(iso, ts) {
       const [y, m, d] = iso.split('-');
       const weekday = new Date(`${iso}T00:00:00`)
         .toLocaleDateString('en-US', { weekday: 'long' })
         .toLowerCase();
-      return `${m}/${d}/${y}, ${weekday}`;
+      const base = `${m}/${d}/${y}, ${weekday}`;
+      if (!ts || typeof ts !== 'number') return base;
+      const time = new Date(ts).toLocaleString('en-US', {
+        timeZone: 'Asia/Manila',
+        hour: 'numeric', minute: '2-digit', hour12: true,
+      }).replace(/\s?(AM|PM)$/, '$1');
+      return `${base}, ${time}`;
     }
 
     (async () => {
@@ -194,7 +200,7 @@
         const post = await res.json();
         document.title = `${post.title} — Edwin Sal`;
         titleEl.textContent = post.title;
-        bylineEl.textContent = `${formatDate(post.date)} - Edwin Sal`;
+        bylineEl.textContent = `${formatDate(post.date, post.ts)} - Edwin Sal`;
         contentEl.innerHTML = post.html;
       } catch (e) { /* silent */ }
       finally { clearLoader(); }
