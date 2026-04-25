@@ -9,7 +9,11 @@ const LOGS_KEY = 'logs:generate';
 const LOG_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const MAX_TITLE_LEN = 120;
 const MAX_HTML_LEN = 200_000;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite-preview';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
+const GEMINI_FALLBACK_MODEL = process.env.GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash';
+const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504]);
+const RETRY_BACKOFF_MS = 2000;
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const STYLE_GUIDE = readFileSync(join(__dirname, 'prompt.md'), 'utf8');
 
@@ -89,8 +93,8 @@ Output format (overrides any Markdown examples in the style guide — the site r
 - Do not mention that you are an AI. Do not include a byline, date, or author line — the site adds those.`;
 }
 
-async function callGemini(apiKey, userTurn, log) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`;
+async function callGeminiOnce(apiKey, model, userTurn, log, attempt) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
   const body = {
     systemInstruction: { parts: [{ text: STYLE_GUIDE }] },
     contents: [{ role: 'user', parts: [{ text: userTurn }] }],
@@ -106,7 +110,7 @@ async function callGemini(apiKey, userTurn, log) {
       },
     },
   };
-  log.info('gemini request', { model: GEMINI_MODEL });
+  log.info('gemini request', { model, attempt });
   const res = await fetch(url, {
     method: 'POST',
     headers: {
@@ -115,10 +119,12 @@ async function callGemini(apiKey, userTurn, log) {
     },
     body: JSON.stringify(body),
   });
-  log.info('gemini response', { status: res.status });
+  log.info('gemini response', { model, attempt, status: res.status });
   if (!res.ok) {
     const text = await res.text().catch(() => '');
-    throw new Error(`gemini ${res.status}: ${text.slice(0, 500)}`);
+    const err = new Error(`gemini ${res.status}: ${text.slice(0, 500)}`);
+    err.status = res.status;
+    throw err;
   }
   const data = await res.json();
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -128,6 +134,33 @@ async function callGemini(apiKey, userTurn, log) {
     throw new Error('gemini: bad shape');
   }
   return parsed;
+}
+
+async function callGeminiWithRetry(apiKey, userTurn, log) {
+  const plan = [
+    { model: GEMINI_MODEL, label: 'primary' },
+    { model: GEMINI_MODEL, label: 'primary' },
+    { model: GEMINI_FALLBACK_MODEL, label: 'fallback' },
+  ];
+  let lastErr;
+  for (let i = 0; i < plan.length; i++) {
+    const { model, label } = plan[i];
+    try {
+      const result = await callGeminiOnce(apiKey, model, userTurn, log, i + 1);
+      return { result, model, label, attempts: i + 1 };
+    } catch (e) {
+      lastErr = e;
+      const retryable = !e.status || RETRYABLE_STATUSES.has(e.status);
+      const hasNext = i < plan.length - 1;
+      if (!retryable || !hasNext) {
+        log.warn('gemini attempt failed, not retrying', { model, attempt: i + 1, status: e.status, retryable, hasNext });
+        throw e;
+      }
+      log.warn('gemini attempt failed, will retry', { model, attempt: i + 1, status: e.status, backoffMs: RETRY_BACKOFF_MS });
+      await sleep(RETRY_BACKOFF_MS);
+    }
+  }
+  throw lastErr;
 }
 
 module.exports = async (req, res) => {
@@ -182,7 +215,8 @@ module.exports = async (req, res) => {
     log.info('existing posts loaded', { count: existing.length });
 
     const userTurn = buildUserTurn(topic);
-    const generated = await callGemini(geminiKey, userTurn, log);
+    const { result: generated, model: usedModel, label: modelLabel, attempts } = await callGeminiWithRetry(geminiKey, userTurn, log);
+    log.info('gemini succeeded', { model: usedModel, modelLabel, attempts });
     const title = generated.title.trim();
     const html = generated.html;
 
@@ -215,7 +249,7 @@ module.exports = async (req, res) => {
     await client.zadd(POSTS_KEY, { score: ts, member: post });
     await client.smove(TOPICS_KEY, TOPICS_USED_KEY, topic);
     log.info('post saved', { slug, title, htmlLen: html.length });
-    return finish(200, { ok: true, post }, { result: 'ok', slug, topic });
+    return finish(200, { ok: true, post }, { result: 'ok', slug, topic, model: usedModel, modelLabel, attempts });
   } catch (e) {
     log.error('upstream error', { message: e.message });
     return finish(502, { error: e.message || 'upstream error' }, { result: 'error', message: e.message });
