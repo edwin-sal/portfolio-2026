@@ -5,6 +5,8 @@ const { join } = require('node:path');
 const POSTS_KEY = 'posts';
 const TOPICS_KEY = 'topics';
 const TOPICS_USED_KEY = 'topics:used';
+const LOGS_KEY = 'logs:generate';
+const LOG_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const MAX_TITLE_LEN = 120;
 const MAX_HTML_LEN = 200_000;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite-preview';
@@ -19,6 +21,53 @@ function getRedis() {
   if (!url || !token) return null;
   redis = new Redis({ url, token });
   return redis;
+}
+
+function createRunLog(req) {
+  const startedAt = Date.now();
+  const runId = `${startedAt.toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  const ua = req.headers['user-agent'] || '';
+  const trigger = ua.includes('vercel-cron') ? 'cron' : 'manual';
+  const events = [];
+  const emit = (level, msg, extra) => {
+    const entry = { dt: Date.now() - startedAt, level, msg };
+    if (extra) entry.extra = extra;
+    events.push(entry);
+    const tail = extra ? ` ${JSON.stringify(extra)}` : '';
+    const line = `[generate ${runId}] ${level} ${msg}${tail}`;
+    if (level === 'error' || level === 'warn') console.error(line);
+    else console.log(line);
+  };
+  return {
+    runId,
+    startedAt,
+    trigger,
+    info: (msg, extra) => emit('info', msg, extra),
+    warn: (msg, extra) => emit('warn', msg, extra),
+    error: (msg, extra) => emit('error', msg, extra),
+    snapshot(outcome) {
+      return {
+        runId,
+        trigger,
+        startedAt,
+        finishedAt: Date.now(),
+        durationMs: Date.now() - startedAt,
+        ...outcome,
+        events,
+      };
+    },
+  };
+}
+
+async function persistLog(client, record) {
+  if (!client) return;
+  try {
+    const cutoff = Date.now() - LOG_TTL_MS;
+    await client.zremrangebyscore(LOGS_KEY, 0, cutoff);
+    await client.zadd(LOGS_KEY, { score: record.startedAt, member: record });
+  } catch (e) {
+    console.error(`[generate ${record.runId}] failed to persist log: ${e.message}`);
+  }
 }
 
 function slugify(title) {
@@ -40,7 +89,7 @@ Output format (overrides any Markdown examples in the style guide — the site r
 - Do not mention that you are an AI. Do not include a byline, date, or author line — the site adds those.`;
 }
 
-async function callGemini(apiKey, userTurn) {
+async function callGemini(apiKey, userTurn, log) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`;
   const body = {
     systemInstruction: { parts: [{ text: STYLE_GUIDE }] },
@@ -57,6 +106,7 @@ async function callGemini(apiKey, userTurn) {
       },
     },
   };
+  log.info('gemini request', { model: GEMINI_MODEL });
   const res = await fetch(url, {
     method: 'POST',
     headers: {
@@ -65,6 +115,7 @@ async function callGemini(apiKey, userTurn) {
     },
     body: JSON.stringify(body),
   });
+  log.info('gemini response', { status: res.status });
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(`gemini ${res.status}: ${text.slice(0, 500)}`);
@@ -80,63 +131,77 @@ async function callGemini(apiKey, userTurn) {
 }
 
 module.exports = async (req, res) => {
+  const log = createRunLog(req);
+  const client = getRedis();
+  log.info('request received', { method: req.method, trigger: log.trigger });
+
+  const finish = async (status, body, outcome) => {
+    const record = log.snapshot({ status, ...outcome });
+    await persistLog(client, record);
+    res.statusCode = status;
+    return res.json(body);
+  };
+
   if (req.method !== 'GET') {
-    res.statusCode = 405;
-    return res.json({ error: 'method not allowed' });
+    log.warn('method not allowed', { method: req.method });
+    return finish(405, { error: 'method not allowed' }, { result: 'method_not_allowed' });
   }
 
   const secret = process.env.CRON_SECRET;
   const geminiKey = process.env.GEMINI_API_KEY;
   if (!secret || !geminiKey) {
-    res.statusCode = 500;
-    return res.json({ error: 'server not configured' });
+    log.error('server not configured', { hasSecret: !!secret, hasGeminiKey: !!geminiKey });
+    return finish(500, { error: 'server not configured' }, { result: 'not_configured' });
   }
 
   const auth = req.headers.authorization || '';
   if (auth !== `Bearer ${secret}`) {
-    res.statusCode = 401;
-    return res.json({ error: 'unauthorized' });
+    log.warn('unauthorized', { hasAuthHeader: !!auth });
+    return finish(401, { error: 'unauthorized' }, { result: 'unauthorized' });
   }
 
   if (process.env.CRON_ENABLED !== 'true') {
-    return res.json({ ok: false, disabled: true });
+    log.info('cron disabled');
+    return finish(200, { ok: false, disabled: true }, { result: 'disabled' });
   }
 
-  const client = getRedis();
   if (!client) {
-    res.statusCode = 500;
-    return res.json({ error: 'server not configured' });
+    log.error('redis client unavailable');
+    return finish(500, { error: 'server not configured' }, { result: 'no_redis' });
   }
 
   try {
     const topic = await client.srandmember(TOPICS_KEY);
     if (typeof topic !== 'string' || !topic.trim()) {
-      res.statusCode = 500;
-      return res.json({ error: 'topics exhausted' });
+      log.error('topics exhausted');
+      return finish(500, { error: 'topics exhausted' }, { result: 'topics_exhausted' });
     }
+    log.info('topic picked', { topic });
 
     const existing = await client.zrange(POSTS_KEY, 0, -1);
+    log.info('existing posts loaded', { count: existing.length });
+
     const userTurn = buildUserTurn(topic);
-    const generated = await callGemini(geminiKey, userTurn);
+    const generated = await callGemini(geminiKey, userTurn, log);
     const title = generated.title.trim();
     const html = generated.html;
 
     if (!title || title.length > MAX_TITLE_LEN) {
-      res.statusCode = 502;
-      return res.json({ error: 'invalid title from gemini' });
+      log.error('invalid title from gemini', { titleLen: title.length });
+      return finish(502, { error: 'invalid title from gemini' }, { result: 'invalid_title' });
     }
     if (!html || html.length > MAX_HTML_LEN) {
-      res.statusCode = 502;
-      return res.json({ error: 'invalid html from gemini' });
+      log.error('invalid html from gemini', { htmlLen: html.length });
+      return finish(502, { error: 'invalid html from gemini' }, { result: 'invalid_html' });
     }
     const slug = slugify(title);
     if (!slug) {
-      res.statusCode = 502;
-      return res.json({ error: 'invalid slug' });
+      log.error('invalid slug', { title });
+      return finish(502, { error: 'invalid slug' }, { result: 'invalid_slug' });
     }
     if (existing.some((p) => p && p.slug === slug)) {
-      res.statusCode = 409;
-      return res.json({ error: 'slug exists', slug });
+      log.warn('slug collision', { slug });
+      return finish(409, { error: 'slug exists', slug }, { result: 'slug_exists', slug });
     }
 
     const ts = Date.now();
@@ -149,9 +214,10 @@ module.exports = async (req, res) => {
     };
     await client.zadd(POSTS_KEY, { score: ts, member: post });
     await client.smove(TOPICS_KEY, TOPICS_USED_KEY, topic);
-    return res.json({ ok: true, post });
+    log.info('post saved', { slug, title, htmlLen: html.length });
+    return finish(200, { ok: true, post }, { result: 'ok', slug, topic });
   } catch (e) {
-    res.statusCode = 502;
-    return res.json({ error: e.message || 'upstream error' });
+    log.error('upstream error', { message: e.message });
+    return finish(502, { error: e.message || 'upstream error' }, { result: 'error', message: e.message });
   }
 };
