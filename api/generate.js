@@ -139,7 +139,6 @@ async function callGeminiOnce(apiKey, model, userTurn, log, attempt) {
 async function callGeminiWithRetry(apiKey, userTurn, log) {
   const plan = [
     { model: GEMINI_MODEL, label: 'primary' },
-    { model: GEMINI_MODEL, label: 'primary' },
     { model: GEMINI_FALLBACK_MODEL, label: 'fallback' },
   ];
   let lastErr;
@@ -204,12 +203,13 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const topic = await client.srandmember(TOPICS_KEY);
-    if (typeof topic !== 'string' || !topic.trim()) {
+    const rawTopic = await client.srandmember(TOPICS_KEY);
+    if (typeof rawTopic !== 'string' || !rawTopic.trim()) {
       log.error('topics exhausted');
       return finish(500, { error: 'topics exhausted' }, { result: 'topics_exhausted' });
     }
-    log.info('topic picked', { topic });
+    const topic = rawTopic.replace(/\s+/g, ' ').trim();
+    log.info('topic picked', { topic, normalized: topic !== rawTopic });
 
     const existing = await client.zrange(POSTS_KEY, 0, -1);
     log.info('existing posts loaded', { count: existing.length });
@@ -247,7 +247,7 @@ module.exports = async (req, res) => {
       ts,
     };
     await client.zadd(POSTS_KEY, { score: ts, member: post });
-    await client.smove(TOPICS_KEY, TOPICS_USED_KEY, topic);
+    await client.smove(TOPICS_KEY, TOPICS_USED_KEY, rawTopic);
     log.info('post saved', { slug, title, htmlLen: html.length });
     return finish(200, { ok: true, post }, { result: 'ok', slug, topic, model: usedModel, modelLabel, attempts });
   } catch (e) {
